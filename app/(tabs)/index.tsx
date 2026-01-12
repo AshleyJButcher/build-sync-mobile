@@ -1,68 +1,252 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { useTheme } from '@shopify/restyle';
+import { type Theme } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { useAuth } from '../../src/hooks/useAuth';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ProjectSelector } from '../../src/components/ProjectSelector';
+import { useProject } from '../../src/hooks/useProjects';
+import { useProjectStore } from '../../src/store/useProjectStore';
+import { StatsCard } from '../../src/components/StatsCard';
+import {
+  useProducts,
+  useMilestones,
+  useDecisions,
+  useCostChanges,
+} from '../../src/hooks/useProjectData';
+import { useMemo, useState } from 'react';
+import { formatCurrency } from '../../src/lib/currency';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const theme = useTheme<Theme>();
+  const insets = useSafeAreaInsets();
   const { user, role, logout } = useAuth();
   const router = useRouter();
+  const { selectedProjectId } = useProjectStore();
+  const [refreshing, setRefreshing] = useState(false);
+  const { data: project, isLoading: isLoadingProject, refetch: refetchProject } = useProject(selectedProjectId);
+  const { data: products, refetch: refetchProducts } = useProducts(selectedProjectId);
+  const { data: milestones, refetch: refetchMilestones } = useMilestones(selectedProjectId);
+  const { data: decisions, refetch: refetchDecisions } = useDecisions(selectedProjectId);
+  const { data: costChanges, refetch: refetchCostChanges } = useCostChanges(selectedProjectId);
 
   const handleLogout = async () => {
     await logout();
     router.replace('/(auth)/login');
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refetchProject(),
+      refetchProducts(),
+      refetchMilestones(),
+      refetchDecisions(),
+      refetchCostChanges(),
+    ]);
+    setRefreshing(false);
+  };
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const pendingDecisions = decisions?.filter((d) => d.status === 'pending').length || 0;
+    const pendingCostChanges = costChanges?.filter((c) => c.status === 'pending').length || 0;
+    const completedMilestones = milestones?.filter((m) => m.status === 'completed').length || 0;
+    const totalMilestones = milestones?.length || 0;
+    const totalProducts = products?.length || 0;
+    
+    // Calculate total cost changes
+    const totalCostChange = costChanges?.reduce((sum, change) => {
+      if (change.status === 'approved') {
+        return sum + (change.new_cost - change.original_cost);
+      }
+      return sum;
+    }, 0) || 0;
+
+    return {
+      pendingDecisions,
+      pendingCostChanges,
+      completedMilestones,
+      totalMilestones,
+      totalProducts,
+      totalCostChange,
+    };
+  }, [decisions, costChanges, milestones, products]);
+
   return (
-    <View style={styles.container}>
-      <Text variant="headingLarge" style={styles.title}>
-        Welcome to BuildSync!
-      </Text>
-      {user && (
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: insets.top + 16 },
+      ]}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={styles.header}>
+        <Text variant="headingLarge" style={[styles.title, { color: theme.colors.text }]}>
+          Dashboard
+        </Text>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <ProjectSelector />
+      </View>
+
+      {selectedProjectId && (
         <>
-          <Text variant="body" style={styles.text}>
-            Email: {user.email}
-          </Text>
-          {role && (
-            <Text variant="body" style={styles.text}>
-              Role: {role}
-            </Text>
-          )}
+          {isLoadingProject ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+          ) : project ? (
+            <>
+              <View style={styles.section}>
+                <Text variant="headingMedium" style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                  {project.name}
+                </Text>
+                {project.description && (
+                  <Text variant="body" style={[styles.text, { color: theme.colors.textSecondary }]}>
+                    {project.description}
+                  </Text>
+                )}
+                {project.address && (
+                  <Text variant="body" style={[styles.text, { color: theme.colors.textSecondary }]}>
+                    📍 {project.address}
+                  </Text>
+                )}
+              </View>
+
+              {/* Stats Grid */}
+              <View style={styles.statsGrid}>
+                <View style={styles.statCardWrapper}>
+                  <StatsCard
+                    title="Pending Decisions"
+                    value={stats.pendingDecisions}
+                    icon="checkmark-circle-outline"
+                    variant={stats.pendingDecisions > 0 ? 'primary' : 'default'}
+                  />
+                </View>
+                <View style={styles.statCardWrapper}>
+                  <StatsCard
+                    title="Pending Cost Changes"
+                    value={stats.pendingCostChanges}
+                    icon="trending-up-outline"
+                    variant={stats.pendingCostChanges > 0 ? 'primary' : 'default'}
+                  />
+                </View>
+                <View style={styles.statCardWrapper}>
+                  <StatsCard
+                    title="Milestones"
+                    value={`${stats.completedMilestones}/${stats.totalMilestones}`}
+                    subtitle={stats.totalMilestones > 0 
+                      ? `${Math.round((stats.completedMilestones / stats.totalMilestones) * 100)}% complete`
+                      : 'No milestones'}
+                    icon="flag-outline"
+                  />
+                </View>
+                <View style={styles.statCardWrapper}>
+                  <StatsCard
+                    title="Products"
+                    value={stats.totalProducts}
+                    icon="cube-outline"
+                  />
+                </View>
+                {stats.totalCostChange !== 0 && (
+                  <View style={styles.statCardWrapper}>
+                    <StatsCard
+                      title="Cost Changes"
+                      value={stats.totalCostChange > 0 ? `+${formatCurrency(stats.totalCostChange)}` : formatCurrency(stats.totalCostChange)}
+                      icon="pound-outline"
+                      variant={stats.totalCostChange > 0 ? 'primary' : 'default'}
+                    />
+                  </View>
+                )}
+              </View>
+            </>
+          ) : null}
         </>
       )}
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
+
+      {!selectedProjectId && (
+        <View style={styles.emptyContainer}>
+          <Text variant="body" style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+            Select a project to view dashboard
+          </Text>
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 24,
   },
   title: {
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  text: {
-    marginBottom: 12,
+    fontSize: 28,
+    fontWeight: 'bold',
   },
   logoutButton: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     backgroundColor: '#4CAF50',
     borderRadius: 8,
   },
   logoutButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 14,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  text: {
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 24,
+    marginHorizontal: -6,
+  },
+  statCardWrapper: {
+    width: '50%',
+    padding: 6,
+  },
+  loadingContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
   },
 });

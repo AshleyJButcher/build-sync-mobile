@@ -6,9 +6,12 @@ import { ThemeProvider } from '@shopify/restyle';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { lightTheme } from '../src/theme';
 import { useAuthStore } from '../src/store/useAuthStore';
+
+const queryClient = new QueryClient();
 
 function RootLayout() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -66,18 +69,20 @@ function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider theme={lightTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          </Stack>
-          <StatusBar style="dark" />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeProvider theme={lightTheme}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="dark" />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }
 
