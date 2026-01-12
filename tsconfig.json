@@ -1,0 +1,17 @@
+{
+  "extends": "expo/tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "jsx": "react-native",
+    "types": ["jest", "node", "react"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "paths": {
+      "*": ["*", "src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}
