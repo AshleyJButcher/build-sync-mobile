@@ -4,7 +4,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -13,32 +12,30 @@ import { type Theme } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useProducts, useUpdateProduct, useDeleteProduct } from '../../src/hooks/useProjectData';
+import { useDecisions, useUpdateDecision, useDeleteDecision } from '../../src/hooks/useProjectData';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { formatCurrency } from '../../src/lib/currency';
-import { EditProductModal } from '../../src/components/EditProductModal';
+import { format } from 'date-fns';
 import { useProjectStore } from '../../src/store/useProjectStore';
+import { EditDecisionModal } from '../../src/components/EditDecisionModal';
 
 const GREEN_PRIMARY = '#4CAF50';
 
-export default function ProductDetailScreen() {
+export default function DecisionDetailScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedProjectId } = useProjectStore();
-  const { data: products, isLoading } = useProducts(selectedProjectId);
-  const updateProduct = useUpdateProduct();
-  const deleteProduct = useDeleteProduct();
+  const { data: decisions, isLoading } = useDecisions(selectedProjectId);
+  const updateDecision = useUpdateDecision();
+  const deleteDecision = useDeleteDecision();
   const { role } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const product = products?.find((p) => p.id === id);
+  const decision = decisions?.find((d) => d.id === id);
 
-  const { user } = useAuth();
   const isBuilder = role === 'builder' || role === 'administrator';
-  const canEdit = isBuilder || product?.added_by === user?.id;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -51,24 +48,35 @@ export default function ProductDetailScreen() {
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'checkmark-circle';
+      case 'rejected':
+        return 'close-circle';
+      default:
+        return 'time-outline';
+    }
+  };
+
   const handleApprove = async () => {
-    if (!product) return;
+    if (!decision) return;
     Alert.alert(
-      'Approve Product',
-      'Are you sure you want to approve this product?',
+      'Approve Decision',
+      'Are you sure you want to approve this decision?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Approve',
           onPress: async () => {
             try {
-              await updateProduct.mutateAsync({
-                id: product.id,
+              await updateDecision.mutateAsync({
+                id: decision.id,
                 status: 'approved',
               });
-              Alert.alert('Success', 'Product approved');
+              Alert.alert('Success', 'Decision approved');
             } catch (error) {
-              Alert.alert('Error', 'Failed to approve product');
+              Alert.alert('Error', 'Failed to approve decision');
             }
           },
         },
@@ -77,10 +85,10 @@ export default function ProductDetailScreen() {
   };
 
   const handleReject = async () => {
-    if (!product) return;
+    if (!decision) return;
     Alert.alert(
-      'Reject Product',
-      'Are you sure you want to reject this product?',
+      'Reject Decision',
+      'Are you sure you want to reject this decision?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -88,13 +96,13 @@ export default function ProductDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await updateProduct.mutateAsync({
-                id: product.id,
+              await updateDecision.mutateAsync({
+                id: decision.id,
                 status: 'rejected',
               });
-              Alert.alert('Success', 'Product rejected');
+              Alert.alert('Success', 'Decision rejected');
             } catch (error) {
-              Alert.alert('Error', 'Failed to reject product');
+              Alert.alert('Error', 'Failed to reject decision');
             }
           },
         },
@@ -103,10 +111,10 @@ export default function ProductDetailScreen() {
   };
 
   const handleDelete = async () => {
-    if (!product) return;
+    if (!decision) return;
     Alert.alert(
-      'Delete Product',
-      'Are you sure you want to delete this product? This action cannot be undone.',
+      'Delete Decision',
+      'Are you sure you want to delete this decision? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -114,14 +122,14 @@ export default function ProductDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteProduct.mutateAsync({
-                id: product.id,
-                projectId: product.project_id,
-                name: product.name,
+              await deleteDecision.mutateAsync({
+                id: decision.id,
+                projectId: decision.project_id,
+                name: decision.title,
               });
               router.back();
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete product');
+              Alert.alert('Error', 'Failed to delete decision');
             }
           },
         },
@@ -129,7 +137,7 @@ export default function ProductDetailScreen() {
     );
   };
 
-  if (isLoading || !product) {
+  if (isLoading || !decision) {
     return (
       <View
         style={[
@@ -143,14 +151,15 @@ export default function ProductDetailScreen() {
             variant="body"
             style={[styles.loadingText, { color: theme.colors.textSecondary }]}
           >
-            {isLoading ? 'Loading product...' : 'Product not found'}
+            {isLoading ? 'Loading decision...' : 'Decision not found'}
           </Text>
         </View>
       </View>
     );
   }
 
-  const statusColor = getStatusColor(product.status);
+  const statusColor = getStatusColor(decision.status);
+  const statusIcon = getStatusIcon(decision.status);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -159,15 +168,17 @@ export default function ProductDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text variant="headingMedium" style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Product Details
+          Decision Details
         </Text>
-        {canEdit && (
+        {isBuilder ? (
           <TouchableOpacity
             onPress={() => setShowEditModal(true)}
             style={styles.editButton}
           >
             <Ionicons name="pencil" size={20} color={theme.colors.text} />
           </TouchableOpacity>
+        ) : (
+          <View style={styles.headerSpacer} />
         )}
       </View>
 
@@ -175,28 +186,6 @@ export default function ProductDetailScreen() {
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
       >
-        {/* Image */}
-        {product.image_url ? (
-          <Image
-            source={{ uri: product.image_url }}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View
-            style={[
-              styles.imagePlaceholder,
-              { backgroundColor: theme.colors.backgroundSecondary },
-            ]}
-          >
-            <Ionicons
-              name="cube-outline"
-              size={64}
-              color={theme.colors.textSecondary}
-            />
-          </View>
-        )}
-
         {/* Status Badge */}
         <View style={styles.statusContainer}>
           <View
@@ -205,53 +194,73 @@ export default function ProductDetailScreen() {
               { backgroundColor: `${statusColor}20` },
             ]}
           >
+            <Ionicons name={statusIcon as any} size={20} color={statusColor} />
             <Text
               variant="caption"
               style={[styles.statusText, { color: statusColor }]}
             >
-              {product.status.toUpperCase()}
+              {decision.status.toUpperCase()}
             </Text>
           </View>
         </View>
 
-        {/* Product Info */}
+        {/* Decision Info */}
         <View style={styles.infoSection}>
-          <Text
-            variant="caption"
-            style={[styles.category, { color: theme.colors.textSecondary }]}
-          >
-            {product.category.toUpperCase()}
-          </Text>
-          <Text variant="headingLarge" style={[styles.productName, { color: theme.colors.text }]}>
-            {product.name}
+          <Text variant="headingLarge" style={[styles.decisionTitle, { color: theme.colors.text }]}>
+            {decision.title}
           </Text>
 
-          {product.price && (
-            <Text
-              variant="headingMedium"
-              style={[styles.price, { color: GREEN_PRIMARY }]}
-            >
-              {formatCurrency(product.price)}
-            </Text>
-          )}
-
-          {product.description && (
+          {decision.description && (
             <Text
               variant="body"
               style={[styles.description, { color: theme.colors.textSecondary }]}
             >
-              {product.description}
+              {decision.description}
             </Text>
           )}
+
+          <View style={styles.metaContainer}>
+            {decision.category && (
+              <View
+                style={[
+                  styles.categoryBadge,
+                  { backgroundColor: theme.colors.backgroundSecondary },
+                ]}
+              >
+                <Text
+                  variant="caption"
+                  style={[styles.categoryText, { color: theme.colors.textSecondary }]}
+                >
+                  {decision.category}
+                </Text>
+              </View>
+            )}
+
+            {decision.due_date && (
+              <View style={styles.metaRow}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
+                <Text
+                  variant="body"
+                  style={[styles.metaText, { color: theme.colors.textSecondary }]}
+                >
+                  Due: {format(new Date(decision.due_date), 'MMM d, yyyy')}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Actions */}
-        {isBuilder && product.status === 'pending' && (
+        {isBuilder && decision.status === 'pending' && (
           <View style={styles.actionsContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.approveButton]}
               onPress={handleApprove}
-              disabled={updateProduct.isPending}
+              disabled={updateDecision.isPending}
             >
               <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Approve</Text>
@@ -259,7 +268,7 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               style={[styles.actionButton, styles.rejectButton]}
               onPress={handleReject}
-              disabled={updateProduct.isPending}
+              disabled={updateDecision.isPending}
             >
               <Ionicons name="close-circle" size={20} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Reject</Text>
@@ -267,30 +276,28 @@ export default function ProductDetailScreen() {
           </View>
         )}
 
-        {canEdit && (
+        {isBuilder && (
           <TouchableOpacity
             style={[styles.deleteButton, { borderColor: theme.colors.error }]}
             onPress={handleDelete}
-            disabled={deleteProduct.isPending}
+            disabled={deleteDecision.isPending}
           >
             <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
             <Text
               variant="body"
               style={[styles.deleteButtonText, { color: theme.colors.error }]}
             >
-              Delete Product
+              Delete Decision
             </Text>
           </TouchableOpacity>
         )}
       </ScrollView>
 
-      <EditProductModal
+      <EditDecisionModal
         visible={showEditModal}
-        product={product}
+        decision={decision}
         onClose={() => setShowEditModal(false)}
-        onSuccess={() => {
-          setShowEditModal(false);
-        }}
+        onSuccess={() => setShowEditModal(false)}
       />
     </View>
   );
@@ -315,67 +322,75 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
   },
+  headerSpacer: {
+    width: 32,
+  },
   editButton: {
-    padding: 4,
+    padding: 8,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
+    padding: 16,
     paddingBottom: 32,
   },
-  productImage: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#F0F0F0',
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   statusContainer: {
-    padding: 16,
-    paddingBottom: 8,
+    marginBottom: 24,
   },
   statusBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
   },
   statusText: {
     fontSize: 12,
     fontWeight: '600',
   },
   infoSection: {
-    padding: 16,
-    gap: 8,
+    marginBottom: 32,
+    gap: 12,
   },
-  category: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  productName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  price: {
+  decisionTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginTop: 4,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
+  },
+  metaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     marginTop: 8,
+    flexWrap: 'wrap',
+  },
+  categoryBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  metaText: {
+    fontSize: 16,
   },
   actionsContainer: {
     flexDirection: 'row',
     gap: 12,
-    padding: 16,
+    marginBottom: 16,
   },
   actionButton: {
     flex: 1,
@@ -404,8 +419,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 1,
-    marginHorizontal: 16,
-    marginTop: 8,
     gap: 8,
   },
   deleteButtonText: {

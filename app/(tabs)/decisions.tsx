@@ -16,17 +16,21 @@ import { useProjectStore } from '../../src/store/useProjectStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
+import { AddDecisionModal } from '../../src/components/AddDecisionModal';
+import { useRouter } from 'expo-router';
 
 const GREEN_PRIMARY = '#4CAF50';
 
 export default function DecisionsScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { selectedProjectId } = useProjectStore();
   const { role } = useAuth();
   const { data: decisions, isLoading, refetch } = useDecisions(selectedProjectId);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const canEditDecisions = role === 'builder' || role === 'administrator';
 
@@ -80,6 +84,9 @@ export default function DecisionsScreen() {
             borderLeftColor: statusColor,
           },
         ]}
+        onPress={() => {
+          router.push(`/decision/${item.id}`);
+        }}
       >
         <View style={styles.decisionHeader}>
           <View style={styles.decisionInfo}>
@@ -108,7 +115,7 @@ export default function DecisionsScreen() {
                 <View
                   style={[
                     styles.categoryBadge,
-                    { backgroundColor: theme.colors.muted },
+                    { backgroundColor: theme.colors.backgroundSecondary },
                   ]}
                 >
                   <Text
@@ -228,6 +235,7 @@ export default function DecisionsScreen() {
         {canEditDecisions && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+            onPress={() => setShowAddModal(true)}
           >
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -245,7 +253,7 @@ export default function DecisionsScreen() {
                 backgroundColor:
                   filter === filterOption
                     ? GREEN_PRIMARY
-                    : theme.colors.muted,
+                    : theme.colors.backgroundSecondary,
               },
             ]}
             onPress={() => setFilter(filterOption)}
@@ -299,6 +307,14 @@ export default function DecisionsScreen() {
           }
         />
       )}
+
+      <AddDecisionModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
     </View>
   );
 }

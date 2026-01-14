@@ -92,7 +92,7 @@ export default function ProductsScreen() {
           <View
             style={[
               styles.productImagePlaceholder,
-              { backgroundColor: theme.colors.muted },
+              { backgroundColor: theme.colors.backgroundSecondary },
             ]}
           >
             <Ionicons
@@ -233,7 +233,7 @@ export default function ProductsScreen() {
                     backgroundColor:
                       selectedCategory === item
                         ? GREEN_PRIMARY
-                        : theme.colors.muted,
+                        : theme.colors.backgroundSecondary,
                   },
                 ]}
                 onPress={() => setSelectedCategory(item)}
