@@ -86,6 +86,8 @@ export function useAuth(): UseAuthReturn {
             setUser(currentUser);
             if (currentUser) {
               await fetchUserRole(currentUser.id);
+            } else {
+              setRole(null);
             }
           }
         } catch (error) {

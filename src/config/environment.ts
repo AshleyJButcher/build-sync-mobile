@@ -1,9 +1,6 @@
 import Constants from 'expo-constants';
 
-type DataSource = 'mock' | 'production';
-
 interface EnvironmentConfig {
-  dataSource: DataSource;
   supabaseUrl: string;
   supabaseAnonKey: string;
 }
@@ -16,52 +13,18 @@ function getSupabaseConfig(): { url: string; anonKey: string } {
   return { url, anonKey };
 }
 
-// Determine data source
-function getEnvironmentConfig(): EnvironmentConfig {
-  const supabaseConfig = getSupabaseConfig();
-
-  // If Supabase URL is set, use Supabase
-  if (supabaseConfig.url !== '' && supabaseConfig.anonKey !== '') {
-    return {
-      dataSource: 'production',
-      supabaseUrl: supabaseConfig.url,
-      supabaseAnonKey: supabaseConfig.anonKey,
-    };
-  }
-
-  // Otherwise, use mock data
-  return {
-    dataSource: 'mock',
-    supabaseUrl: '',
-    supabaseAnonKey: '',
-  };
-}
-
-const currentConfig = getEnvironmentConfig();
+const supabaseConfig = getSupabaseConfig();
 
 export const environment = {
-  get dataSource() {
-    return currentConfig.dataSource;
-  },
   get supabaseUrl() {
-    return currentConfig.supabaseUrl;
+    return supabaseConfig.url;
   },
   get supabaseAnonKey() {
-    return currentConfig.supabaseAnonKey;
-  },
-  get isMock() {
-    return currentConfig.dataSource === 'mock';
-  },
-  get isProduction() {
-    return currentConfig.dataSource === 'production';
-  },
-  get isSupabase() {
-    return currentConfig.dataSource === 'production';
+    return supabaseConfig.anonKey;
   },
 };
 
 console.log('[Environment] Initialized with:', {
-  dataSource: environment.dataSource,
   hasUrl: environment.supabaseUrl !== '',
   hasKey: environment.supabaseAnonKey !== '',
 });

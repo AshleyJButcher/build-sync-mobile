@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "jsx": "react-native",
-    "types": ["jest", "node", "react"],
+    "types": [ "node", "react"],
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "paths": {
       "*": ["*", "src/*"]

@@ -1,66 +1,28 @@
 import { supabase } from '../lib/supabase';
-import { environment } from '../config/environment';
 import { type User } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 
 // Check if we have an active authentication session
 export async function checkAuthSession(): Promise<boolean> {
   console.log('[Auth] checkAuthSession() called');
+  console.log('[Auth] Checking Supabase session...');
+  
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
 
-  // Check for real Supabase session if not using mock
-  if (!environment.isMock) {
-    console.log('[Auth] Checking Supabase session...');
-    try {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      // Handle invalid refresh token errors gracefully
-      if (error !== null) {
-        const errorMessage = error.message?.toLowerCase() ?? '';
-        const isInvalidRefreshToken =
-          errorMessage.includes('invalid refresh token') ||
-          errorMessage.includes('refresh token not found');
-
-        if (isInvalidRefreshToken) {
-          console.log(
-            '[Auth] Invalid refresh token detected - clearing session'
-          );
-          // Clear the invalid session
-          try {
-            await supabase.auth.signOut();
-          } catch (signOutError) {
-            // Ignore sign out errors - session is already invalid
-            console.log(
-              '[Auth] Error during cleanup sign out (expected):',
-              signOutError
-            );
-          }
-          return false;
-        }
-
-        console.log('[Auth] Error checking Supabase session:', error);
-        return false;
-      }
-
-      const hasSupabaseSession = session !== null && session !== undefined;
-      console.log('[Auth] Supabase session check result:', hasSupabaseSession);
-      return hasSupabaseSession;
-    } catch (error) {
-      // Check if this is an invalid refresh token error
-      const errorMessage =
-        error instanceof Error
-          ? (error.message?.toLowerCase() ?? '')
-          : String(error).toLowerCase();
-
+    // Handle invalid refresh token errors gracefully
+    if (error !== null) {
+      const errorMessage = error.message?.toLowerCase() ?? '';
       const isInvalidRefreshToken =
         errorMessage.includes('invalid refresh token') ||
         errorMessage.includes('refresh token not found');
 
       if (isInvalidRefreshToken) {
         console.log(
-          '[Auth] Invalid refresh token detected (from exception) - clearing session'
+          '[Auth] Invalid refresh token detected - clearing session'
         );
         // Clear the invalid session
         try {
@@ -78,20 +40,45 @@ export async function checkAuthSession(): Promise<boolean> {
       console.log('[Auth] Error checking Supabase session:', error);
       return false;
     }
-  }
 
-  console.log('[Auth] No session found - returning false');
-  return false;
+    const hasSupabaseSession = session !== null && session !== undefined;
+    console.log('[Auth] Supabase session check result:', hasSupabaseSession);
+    return hasSupabaseSession;
+  } catch (error) {
+    // Check if this is an invalid refresh token error
+    const errorMessage =
+      error instanceof Error
+        ? (error.message?.toLowerCase() ?? '')
+        : String(error).toLowerCase();
+
+    const isInvalidRefreshToken =
+      errorMessage.includes('invalid refresh token') ||
+      errorMessage.includes('refresh token not found');
+
+    if (isInvalidRefreshToken) {
+      console.log(
+        '[Auth] Invalid refresh token detected (from exception) - clearing session'
+      );
+      // Clear the invalid session
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        // Ignore sign out errors - session is already invalid
+        console.log(
+          '[Auth] Error during cleanup sign out (expected):',
+          signOutError
+        );
+      }
+      return false;
+    }
+
+    console.log('[Auth] Error checking Supabase session:', error);
+    return false;
+  }
 }
 
 // Get current user data
 export async function getCurrentUser(): Promise<User | null> {
-  // If in mock mode, return null
-  if (environment.isMock) {
-    return null;
-  }
-
-  // Real Supabase mode - check for real session
   try {
     // Check session first (more reliable than getUser)
     const { data: sessionData } = await supabase.auth.getSession();
@@ -155,77 +142,33 @@ export async function login(
   requiresEmailConfirmation?: boolean;
 }> {
   console.log(`[Auth] Login attempt for: ${email}`);
-  console.log(`[Auth] Environment: ${environment.dataSource}`);
 
-  if (environment.isMock) {
-    // Mock authentication logic for development
-    console.log(`[Auth] Mock authentication for: ${email}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    console.log(`[Auth] Authenticating user: ${email}`);
 
-    if (email !== '' && password.length >= 6) {
-      return { success: true };
-    }
-    return {
-      success: false,
-      error:
-        'Invalid email or password. Please check your credentials and try again.',
-    };
-  } else {
-    // Real Supabase authentication
-    try {
-      console.log(`[Auth] Authenticating user: ${email}`);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error !== null) {
-        console.log('[Auth] Authentication error:', error);
-
-        // Check if error is due to email not being confirmed
-        const errorMessage = (error.message ?? '').toLowerCase();
-        const errorName = (error.name ?? '').toLowerCase();
-        const errorString = String(error).toLowerCase();
-
-        const requiresEmailConfirmation =
-          errorMessage.includes('email not confirmed') ||
-          errorMessage.includes('email not verified') ||
-          errorName.includes('email not confirmed') ||
-          errorString.includes('email not confirmed');
-
-        console.log('[Auth] Requires email confirmation:', {
-          requiresEmailConfirmation,
-          errorMessage,
-        });
-
-        return {
-          success: false,
-          error: formatAuthError(error),
-          requiresEmailConfirmation,
-        };
-      }
-
-      if (data.user === null) {
-        return {
-          success: false,
-          error:
-            'Invalid email or password. Please check your credentials and try again.',
-        };
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error('[Auth] Authentication error:', error);
+    if (error !== null) {
+      console.log('[Auth] Authentication error:', error);
 
       // Check if error is due to email not being confirmed
-      const errorMessage =
-        error instanceof Error
-          ? (error.message?.toLowerCase() ?? '')
-          : String(error).toLowerCase();
+      const errorMessage = (error.message ?? '').toLowerCase();
+      const errorName = (error.name ?? '').toLowerCase();
+      const errorString = String(error).toLowerCase();
+
       const requiresEmailConfirmation =
         errorMessage.includes('email not confirmed') ||
-        errorMessage.includes('email not verified');
+        errorMessage.includes('email not verified') ||
+        errorName.includes('email not confirmed') ||
+        errorString.includes('email not confirmed');
+
+      console.log('[Auth] Requires email confirmation:', {
+        requiresEmailConfirmation,
+        errorMessage,
+      });
 
       return {
         success: false,
@@ -233,6 +176,33 @@ export async function login(
         requiresEmailConfirmation,
       };
     }
+
+    if (data.user === null) {
+      return {
+        success: false,
+        error:
+          'Invalid email or password. Please check your credentials and try again.',
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Auth] Authentication error:', error);
+
+    // Check if error is due to email not being confirmed
+    const errorMessage =
+      error instanceof Error
+        ? (error.message?.toLowerCase() ?? '')
+        : String(error).toLowerCase();
+    const requiresEmailConfirmation =
+      errorMessage.includes('email not confirmed') ||
+      errorMessage.includes('email not verified');
+
+    return {
+      success: false,
+      error: formatAuthError(error),
+      requiresEmailConfirmation,
+    };
   }
 }
 
@@ -275,80 +245,65 @@ export async function register(
   requiresEmailConfirmation?: boolean;
   email?: string;
 }> {
-  if (environment.isMock) {
-    // Mock registration
-    console.log(`[Auth] Mock registration for: ${email}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    console.log(`[Auth] Registering user: ${email}`);
 
-    if (email !== '' && password !== '' && password.length >= 6 && name !== '') {
-      return { success: true, requiresEmailConfirmation: false };
-    }
-    return {
-      success: false,
-      error: 'Please fill in all fields correctly.',
-    };
-  } else {
-    // Real Supabase registration
-    try {
-      console.log(`[Auth] Registering user: ${email}`);
+    // Get app scheme for redirect URL
+    const appScheme =
+      (Constants.expoConfig?.scheme as string | undefined) ?? 'build-sync';
+    const redirectUrl = `${appScheme}://`;
 
-      // Get app scheme for redirect URL
-      const appScheme =
-        (Constants.expoConfig?.scheme as string | undefined) ?? 'build-sync';
-      const redirectUrl = `${appScheme}://`;
+    console.log(`[Auth] Using redirect URL: ${redirectUrl}`);
 
-      console.log(`[Auth] Using redirect URL: ${redirectUrl}`);
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role: role || 'client',
-          },
-          emailRedirectTo: redirectUrl,
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          role: role || 'client',
         },
-      });
+        emailRedirectTo: redirectUrl,
+      },
+    });
 
-      if (error !== null) {
-        console.log('[Auth] Registration error:', error);
-        return {
-          success: false,
-          error: formatRegistrationError(error),
-        };
-      }
-
-      if (data.user === null) {
-        return {
-          success: false,
-          error: 'Registration failed. Please try again.',
-        };
-      }
-
-      // Check if email confirmation is required
-      const requiresEmailConfirmation =
-        data.session === null || data.session === undefined;
-
-      // Don't auto-login if email confirmation is required
-      if (requiresEmailConfirmation) {
-        console.log(
-          '[Auth] Email confirmation required - user will need to verify email before signing in'
-        );
-      }
-
-      return {
-        success: true,
-        requiresEmailConfirmation,
-        email: data.user.email ?? email,
-      };
-    } catch (error) {
-      console.error('[Auth] Registration error:', error);
+    if (error !== null) {
+      console.log('[Auth] Registration error:', error);
       return {
         success: false,
         error: formatRegistrationError(error),
       };
     }
+
+    if (data.user === null) {
+      return {
+        success: false,
+        error: 'Registration failed. Please try again.',
+      };
+    }
+
+    // Check if email confirmation is required
+    const requiresEmailConfirmation =
+      data.session === null || data.session === undefined;
+
+    // Don't auto-login if email confirmation is required
+    if (requiresEmailConfirmation) {
+      console.log(
+        '[Auth] Email confirmation required - user will need to verify email before signing in'
+      );
+    }
+
+    return {
+      success: true,
+      requiresEmailConfirmation,
+      email: data.user.email ?? email,
+    };
+  } catch (error) {
+    console.error('[Auth] Registration error:', error);
+    return {
+      success: false,
+      error: formatRegistrationError(error),
+    };
   }
 }
 
@@ -356,11 +311,6 @@ export async function register(
 export async function resetPassword(
   email: string
 ): Promise<{ success: boolean; error?: string }> {
-  if (environment.isMock) {
-    console.log(`[Auth] Mock reset password for: ${email}`);
-    return { success: true };
-  }
-
   try {
     console.log(`[Auth] Sending password reset email to: ${email}`);
 
@@ -399,11 +349,6 @@ export async function resetPassword(
 export async function updatePassword(
   newPassword: string
 ): Promise<{ success: boolean; error?: string }> {
-  if (environment.isMock) {
-    console.log('[Auth] Mock update password');
-    return { success: true };
-  }
-
   try {
     console.log('[Auth] Updating password...');
 
@@ -435,11 +380,6 @@ export async function updatePassword(
 export async function resendVerificationEmail(
   email: string
 ): Promise<{ success: boolean; error?: string }> {
-  if (environment.isMock) {
-    console.log(`[Auth] Mock resend verification email for: ${email}`);
-    return { success: true };
-  }
-
   try {
     console.log(`[Auth] Resending verification email to: ${email}`);
 
@@ -482,12 +422,9 @@ export async function resendVerificationEmail(
 export async function logout(): Promise<void> {
   console.log('[Auth] Logging out...');
 
-  // Clear real session if not using mock
-  if (!environment.isMock) {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('[Auth] Logout error:', error);
-    }
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('[Auth] Logout error:', error);
   }
 }

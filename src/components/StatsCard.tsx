@@ -80,7 +80,7 @@ export function StatsCard({
             {
               backgroundColor: isPrimary
                 ? 'rgba(255, 255, 255, 0.2)'
-                : theme.colors.muted,
+                : theme.colors.backgroundSecondary,
             },
           ]}
         >

@@ -17,17 +17,21 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../src/lib/currency';
 import { format } from 'date-fns';
+import { AddCostChangeModal } from '../../src/components/AddCostChangeModal';
+import { useRouter } from 'expo-router';
 
 const GREEN_PRIMARY = '#4CAF50';
 
 export default function CostChangesScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { selectedProjectId } = useProjectStore();
   const { role } = useAuth();
   const { data: costChanges, isLoading, refetch } = useCostChanges(selectedProjectId);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const canEditCostChanges = role === 'builder' || role === 'administrator';
 
@@ -99,6 +103,9 @@ export default function CostChangesScreen() {
             borderLeftColor: statusColor,
           },
         ]}
+        onPress={() => {
+          router.push(`/cost-change/${item.id}`);
+        }}
       >
         <View style={styles.costChangeHeader}>
           <View style={styles.costChangeInfo}>
@@ -161,7 +168,7 @@ export default function CostChangesScreen() {
                 <View
                   style={[
                     styles.categoryBadge,
-                    { backgroundColor: theme.colors.muted },
+                    { backgroundColor: theme.colors.backgroundSecondary },
                   ]}
                 >
                   <Text
@@ -277,6 +284,7 @@ export default function CostChangesScreen() {
         {canEditCostChanges && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+            onPress={() => setShowAddModal(true)}
           >
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -289,7 +297,7 @@ export default function CostChangesScreen() {
           <View
             style={[
               styles.summaryCard,
-              { backgroundColor: theme.colors.muted },
+              { backgroundColor: theme.colors.backgroundSecondary },
             ]}
           >
             <Text
@@ -323,7 +331,7 @@ export default function CostChangesScreen() {
                 backgroundColor:
                   filter === filterOption
                     ? GREEN_PRIMARY
-                    : theme.colors.muted,
+                    : theme.colors.backgroundSecondary,
               },
             ]}
             onPress={() => setFilter(filterOption)}
@@ -377,6 +385,14 @@ export default function CostChangesScreen() {
           }
         />
       )}
+
+      <AddCostChangeModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
     </View>
   );
 }
