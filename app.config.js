@@ -50,18 +50,22 @@ export default {
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
+      foregroundImage: './assets/icon.png',
       backgroundColor: '#4CAF50'
     },
     package: 'com.buildsync.mobile'
   },
   web: {
-    favicon: './assets/favicon.png',
+    favicon: './assets/icon.png',
     name: 'BuildSync',
     bundler: 'metro'
   },
   scheme: 'build-sync',
   extra: {
+    // EAS project configuration
+    eas: {
+      projectId: 'eaf2a8c4-6038-4302-ad75-03a920d8f55a'
+    },
     // Supabase configuration
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || '',
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
