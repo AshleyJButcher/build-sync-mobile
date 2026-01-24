@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -50,6 +51,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "dotenv": "^17.2.3",
     "eslint": "^8.57.1",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.2"
   },
   "private": true

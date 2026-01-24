@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
@@ -22,9 +22,6 @@ import {
   validatePassword,
 } from '../../src/utils/validation';
 
-// Green color matching the design
-const GREEN_PRIMARY = '#4CAF50';
-
 export default function LoginScreen() {
   const theme = useTheme<Theme>();
   const router = useRouter();
@@ -32,7 +29,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [validationError, setValidationError] = useState('');
   const [isTouched, setIsTouched] = useState({
     email: false,
@@ -123,11 +119,6 @@ export default function LoginScreen() {
     router.push('/(auth)/forgot-password');
   };
 
-  const handleSocialLogin = (provider: 'apple' | 'google') => {
-    // TODO: Implement social login
-    console.log(`Social login with ${provider}`);
-  };
-
   // Mark field as touched when user interacts with it
   const handleEmailChange = (text: string) => {
     setEmail(text);
@@ -193,7 +184,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: GREEN_PRIMARY }]}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
       testID="login-screen"
@@ -201,18 +192,100 @@ export default function LoginScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* Green header banner */}
-        <View style={styles.headerBanner}>
+        {/* Top Section with Intro Text */}
+        <View style={styles.topSection}>
           <Text
-            variant="subheader"
-            style={styles.headerBannerText}
-            testID="sign-in-header"
+            variant="body"
+            style={[styles.introText, { color: theme.colors.text }]}
+            testID="intro-text"
           >
-            Sign In
+            Track product choices, milestones, cost changes & decisions together.
           </Text>
+
+          {/* Feature Buttons Grid */}
+          <View style={styles.featureGrid}>
+            <TouchableOpacity
+              style={[
+                styles.featureButton,
+                { backgroundColor: theme.colors.background, borderColor: theme.colors.border },
+              ]}
+            >
+              <Ionicons name="business-outline" size={24} color={GREEN_PRIMARY} />
+              <Text
+                variant="bodySmall"
+                style={[styles.featureButtonText, { color: theme.colors.text }]}
+              >
+                For pros & clients
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.featureButton,
+                { backgroundColor: theme.colors.background, borderColor: theme.colors.border },
+              ]}
+            >
+              <Ionicons name="cube-outline" size={24} color={GREEN_PRIMARY} />
+              <Text
+                variant="bodySmall"
+                style={[styles.featureButtonText, { color: theme.colors.text }]}
+              >
+                Track products
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.featureButton,
+                { backgroundColor: theme.colors.background, borderColor: theme.colors.border },
+              ]}
+            >
+              <Ionicons name="flag-outline" size={24} color={GREEN_PRIMARY} />
+              <Text
+                variant="bodySmall"
+                style={[styles.featureButtonText, { color: theme.colors.text }]}
+              >
+                Share milestones
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.featureButton,
+                { backgroundColor: theme.colors.background, borderColor: theme.colors.border },
+              ]}
+            >
+              <Ionicons name="camera-outline" size={24} color={GREEN_PRIMARY} />
+              <Text
+                variant="bodySmall"
+                style={[styles.featureButtonText, { color: theme.colors.text }]}
+              >
+                Photos & comments
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Watch a Demo */}
+          <TouchableOpacity
+            style={styles.watchDemoContainer}
+            onPress={() => {
+              // TODO: Implement demo video
+              console.log('Watch demo');
+            }}
+          >
+            <Ionicons name="play-circle-outline" size={24} color={GREEN_PRIMARY} />
+            <Text
+              variant="body"
+              style={[styles.watchDemoText, { color: GREEN_PRIMARY }]}
+            >
+              Watch a Demo
+            </Text>
+          </TouchableOpacity>
         </View>
 
+        {/* Login Form Section */}
         <View
           style={[
             styles.formContainer,
@@ -220,11 +293,11 @@ export default function LoginScreen() {
           ]}
         >
           <Text
-            variant="subheader"
+            variant="headingMedium"
             style={[styles.welcomeTitle, { color: theme.colors.text }]}
             testID="welcome-text"
           >
-            Welcome Back!
+            Welcome back
           </Text>
 
           <Text
@@ -235,7 +308,7 @@ export default function LoginScreen() {
             ]}
             testID="login-instruction"
           >
-            To keep connected with us please login with your personal info
+            Enter your credentials to access your project
           </Text>
 
           {hasError ? (
@@ -285,42 +358,69 @@ export default function LoginScreen() {
               variant="caption"
               style={[styles.inputLabel, { color: theme.colors.textSecondary }]}
             >
-              Email Address
+              Email
             </Text>
-            <TextInput
-              placeholder="Email Address"
-              value={email}
-              onChangeText={handleEmailChange}
-              onBlur={handleEmailBlur}
-              style={[
-                styles.input,
-                {
-                  color: theme.colors.text,
-                  borderColor:
-                    isTouched.email && email.trim() === ''
-                      ? theme.colors.error
-                      : theme.colors.border,
-                  backgroundColor: theme.colors.background,
-                },
-              ]}
-              placeholderTextColor={theme.colors.textSecondary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              returnKeyType="next"
-              testID="email-input"
-            />
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="mail-outline"
+                size={20}
+                color={theme.colors.textSecondary}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                placeholder="you@example.com"
+                value={email}
+                onChangeText={handleEmailChange}
+                onBlur={handleEmailBlur}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.colors.text,
+                    borderColor:
+                      isTouched.email && email.trim() === ''
+                        ? theme.colors.error
+                        : GREEN_PRIMARY,
+                    backgroundColor: theme.colors.background,
+                  },
+                ]}
+                placeholderTextColor={theme.colors.textSecondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                returnKeyType="next"
+                testID="email-input"
+              />
+            </View>
           </View>
 
           <View style={styles.inputWrapper}>
-            <Text
-              variant="caption"
-              style={[styles.inputLabel, { color: theme.colors.textSecondary }]}
-            >
-              Password
-            </Text>
+            <View style={styles.passwordHeader}>
+              <Text
+                variant="caption"
+                style={[styles.inputLabel, { color: theme.colors.textSecondary }]}
+              >
+                Password
+              </Text>
+              <TouchableOpacity
+                onPress={handleForgotPassword}
+                testID="forgot-password-button"
+              >
+                <Text
+                  variant="bodySmall"
+                  style={[styles.forgotPasswordText, { color: GREEN_PRIMARY }]}
+                >
+                  Forgot password?
+                </Text>
+              </TouchableOpacity>
+            </View>
             <View style={styles.passwordInputContainer}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color={theme.colors.textSecondary}
+                style={styles.inputIcon}
+              />
               <TextInput
-                placeholder="Password"
+                placeholder="••••••••"
                 value={password}
                 onChangeText={handlePasswordChange}
                 onBlur={handlePasswordBlur}
@@ -331,7 +431,7 @@ export default function LoginScreen() {
                     borderColor:
                       isTouched.password && password.trim() === ''
                         ? theme.colors.error
-                        : theme.colors.border,
+                        : GREEN_PRIMARY,
                     backgroundColor: theme.colors.background,
                   },
                 ]}
@@ -356,50 +456,6 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Remember me and Forgot password */}
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity
-              style={styles.rememberMeContainer}
-              onPress={() => {
-                setRememberMe(!rememberMe);
-              }}
-              testID="remember-me-checkbox"
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    backgroundColor: rememberMe ? GREEN_PRIMARY : 'transparent',
-                    borderColor: rememberMe
-                      ? GREEN_PRIMARY
-                      : theme.colors.border,
-                  },
-                ]}
-              >
-                {rememberMe && (
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                )}
-              </View>
-              <Text
-                variant="body"
-                style={[styles.rememberMeText, { color: theme.colors.text }]}
-              >
-                Remember me?
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleForgotPassword}
-              testID="forgot-password-button"
-            >
-              <Text
-                variant="body"
-                style={[styles.forgotPasswordText, { color: GREEN_PRIMARY }]}
-              >
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity
             style={[
               styles.loginButton,
@@ -419,86 +475,17 @@ export default function LoginScreen() {
                 testID="login-loading"
               />
             ) : (
-              <Text
-                style={[styles.buttonText, { color: '#FFFFFF' }]}
-                testID="login-button-text"
-              >
-                Sign In
-              </Text>
+              <View style={styles.buttonContent}>
+                <Text
+                  style={[styles.buttonText, { color: '#FFFFFF' }]}
+                  testID="login-button-text"
+                >
+                  Sign In
+                </Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+              </View>
             )}
           </TouchableOpacity>
-
-          {/* Separator */}
-          <View style={styles.separatorContainer}>
-            <View
-              style={[
-                styles.separatorLine,
-                { backgroundColor: theme.colors.border },
-              ]}
-            />
-            <Text
-              variant="caption"
-              style={[
-                styles.separatorText,
-                { color: theme.colors.textSecondary },
-              ]}
-            >
-              OR CONTINUE WITH
-            </Text>
-            <View
-              style={[
-                styles.separatorLine,
-                { backgroundColor: theme.colors.border },
-              ]}
-            />
-          </View>
-
-          {/* Social login buttons */}
-          {Platform.OS === 'ios' ? (
-            <TouchableOpacity
-              style={[
-                styles.socialButton,
-                {
-                  backgroundColor: theme.colors.background,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-              onPress={() => {
-                handleSocialLogin('apple');
-              }}
-              testID="apple-login-button"
-            >
-              <Ionicons name="logo-apple" size={20} color="#000000" />
-              <Text
-                variant="body"
-                style={[styles.socialButtonText, { color: theme.colors.text }]}
-              >
-                Sign In with Apple
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.socialButton,
-                {
-                  backgroundColor: theme.colors.background,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-              onPress={() => {
-                handleSocialLogin('google');
-              }}
-              testID="google-login-button"
-            >
-              <Ionicons name="logo-google" size={20} color="#EA4335" />
-              <Text
-                variant="body"
-                style={[styles.socialButtonText, { color: theme.colors.text }]}
-              >
-                Sign In with Google
-              </Text>
-            </TouchableOpacity>
-          )}
 
           <View style={styles.registerContainer}>
             <Text
@@ -513,7 +500,7 @@ export default function LoginScreen() {
                 style={[styles.registerText, { color: GREEN_PRIMARY }]}
                 testID="register-button-text"
               >
-                Register
+                Sign up
               </Text>
             </TouchableOpacity>
           </View>
@@ -531,34 +518,61 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 0,
   },
-  headerBanner: {
-    backgroundColor: GREEN_PRIMARY,
-    paddingVertical: 20,
+  topSection: {
     paddingHorizontal: 24,
-    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 32,
   },
-  headerBannerText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 18,
+  introText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  featureGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  featureButton: {
+    flex: 1,
+    minWidth: '45%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 12,
+  },
+  featureButtonText: {
+    flex: 1,
+  },
+  watchDemoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+  },
+  watchDemoText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   formContainer: {
     width: '100%',
     padding: 24,
-    marginTop: 150,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    paddingTop: 32,
   },
   welcomeTitle: {
-    marginTop: 24,
     marginBottom: 8,
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   welcomeSubtitle: {
     marginBottom: 32,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 22,
   },
   errorContainer: {
     flexDirection: 'row',
@@ -601,12 +615,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 1,
+  },
   input: {
+    flex: 1,
     height: 48,
     borderWidth: 1,
     fontSize: 16,
-    paddingHorizontal: 16,
+    paddingLeft: 48,
+    paddingRight: 16,
     borderRadius: 8,
+  },
+  passwordHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   passwordInputContainer: {
     flexDirection: 'row',
@@ -618,40 +650,18 @@ const styles = StyleSheet.create({
     height: 48,
     borderWidth: 1,
     fontSize: 16,
-    paddingHorizontal: 16,
+    paddingLeft: 48,
     paddingRight: 48,
     borderRadius: 8,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   eyeIcon: {
     position: 'absolute',
     right: 16,
     padding: 4,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderRadius: 4,
-    marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rememberMeText: {
-    fontSize: 14,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    fontWeight: '500',
   },
   loginButton: {
     height: 50,
@@ -663,39 +673,17 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.7,
   },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   buttonText: {
     fontWeight: '600',
     fontSize: 16,
   },
-  separatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  separatorLine: {
-    flex: 1,
-    height: 1,
-  },
-  separatorText: {
-    marginHorizontal: 12,
-    fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 50,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 16,
-  },
-  socialButtonText: {
-    marginLeft: 12,
-    fontSize: 16,
-    fontWeight: '500',
+  buttonIcon: {
+    marginLeft: 4,
   },
   registerContainer: {
     flexDirection: 'row',

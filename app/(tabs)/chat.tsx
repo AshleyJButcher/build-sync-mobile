@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,8 +21,6 @@ import { useProjectStore } from '../../src/store/useProjectStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useProjectMembers } from '../../src/hooks/useProjectMembers';
 import { format, isToday, isYesterday } from 'date-fns';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ChatScreen() {
   const theme = useTheme<Theme>();

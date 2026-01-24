@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,8 +18,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, isValid } from 'date-fns';
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { EditMilestoneModal } from '../../src/components/EditMilestoneModal';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function MilestoneDetailScreen() {
   const theme = useTheme<Theme>();

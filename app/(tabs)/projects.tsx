@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useProjects, type Project } from '../../src/hooks/useProjects';
@@ -18,8 +18,6 @@ import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { CreateProjectModal } from '../../src/components/CreateProjectModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ProjectsScreen() {
   const theme = useTheme<Theme>();

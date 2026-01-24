@@ -8,13 +8,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useProjects, type Project } from '../hooks/useProjects';
 import { useProjectStore } from '../store/useProjectStore';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 interface ProjectSelectorProps {
   onSelectProject?: (project: Project) => void;

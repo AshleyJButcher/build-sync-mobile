@@ -10,15 +10,12 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRouter } from 'expo-router';
 import { validateEmail } from '../../src/utils/validation';
-
-// Green color matching the design
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ForgotPasswordScreen() {
   const theme = useTheme<Theme>();
