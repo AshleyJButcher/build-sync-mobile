@@ -187,7 +187,7 @@ export default function HomeScreen() {
                     <StatsCard
                       title="Cost Changes"
                       value={stats.totalCostChange > 0 ? `+${formatCurrency(stats.totalCostChange)}` : formatCurrency(stats.totalCostChange)}
-                      icon="pound-outline"
+                      icon="cash-outline"
                       variant={stats.totalCostChange > 0 ? 'primary' : 'default'}
                       onPress={() => router.push('/(tabs)/cost-changes')}
                     />
