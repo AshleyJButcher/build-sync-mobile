@@ -45,12 +45,30 @@ export async function checkAuthSession(): Promise<boolean> {
     console.log('[Auth] Supabase session check result:', hasSupabaseSession);
     return hasSupabaseSession;
   } catch (error) {
-    // Check if this is an invalid refresh token error
+    // Check if this is a configuration error (missing environment variables)
     const errorMessage =
       error instanceof Error
         ? (error.message?.toLowerCase() ?? '')
         : String(error).toLowerCase();
 
+    const isConfigurationError =
+      errorMessage.includes('supabase credentials are missing') ||
+      errorMessage.includes('environment variables') ||
+      errorMessage.includes('expo_public_supabase');
+
+    if (isConfigurationError) {
+      console.error(
+        '[Auth] Configuration error detected:',
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error(
+        '[Auth] Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in EAS secrets or environment variables.'
+      );
+      // Return false instead of crashing - allows app to show login screen
+      return false;
+    }
+
+    // Check if this is an invalid refresh token error
     const isInvalidRefreshToken =
       errorMessage.includes('invalid refresh token') ||
       errorMessage.includes('refresh token not found');

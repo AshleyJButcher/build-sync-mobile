@@ -45,7 +45,9 @@ export default {
     bundleIdentifier: 'com.buildsync.mobile',
     jsEngine: 'jsc',
     infoPlist: {
-      ITSAppUsesNonExemptEncryption: false
+      ITSAppUsesNonExemptEncryption: false,
+      NSPhotoLibraryUsageDescription: 'This app needs access to your photo library to upload product images for your construction projects.',
+      NSPhotoLibraryAddUsageDescription: 'This app needs permission to save images to your photo library.'
     }
   },
   android: {
@@ -76,6 +78,12 @@ export default {
     'expo-font',
     'expo-router',
     'expo-web-browser',
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'The app accesses your photos to let you upload product images.',
+      },
+    ],
   ],
   runtimeVersion: {
     policy: 'appVersion'
