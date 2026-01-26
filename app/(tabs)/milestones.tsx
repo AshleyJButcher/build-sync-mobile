@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddMilestoneModal } from '../../src/components/AddMilestoneModal';
 import { useRouter } from 'expo-router';
+import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function MilestonesScreen() {
   const theme = useTheme<Theme>();
@@ -229,6 +230,8 @@ export default function MilestonesScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <ProjectTabBar />
 
       {milestones && milestones.length === 0 ? (
         <View style={styles.emptyContainer}>

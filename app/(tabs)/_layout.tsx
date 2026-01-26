@@ -31,37 +31,25 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="products"
         options={{
-          title: 'Products',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar but keep as route
         }}
       />
       <Tabs.Screen
         name="milestones"
         options={{
-          title: 'Milestones',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="flag" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar but keep as route
         }}
       />
       <Tabs.Screen
         name="decisions"
         options={{
-          title: 'Decisions',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="checkmark-circle" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar but keep as route
         }}
       />
       <Tabs.Screen
         name="cost-changes"
         options={{
-          title: 'Costs',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trending-up" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar but keep as route
         }}
       />
       <Tabs.Screen

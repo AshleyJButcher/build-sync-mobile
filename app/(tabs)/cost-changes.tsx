@@ -19,6 +19,7 @@ import { formatCurrency } from '../../src/lib/currency';
 import { format } from 'date-fns';
 import { AddCostChangeModal } from '../../src/components/AddCostChangeModal';
 import { useRouter } from 'expo-router';
+import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function CostChangesScreen() {
   const theme = useTheme<Theme>();
@@ -288,6 +289,8 @@ export default function CostChangesScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <ProjectTabBar />
 
       {/* Summary Cards */}
       {totals.total !== 0 && (

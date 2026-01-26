@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddDecisionModal } from '../../src/components/AddDecisionModal';
 import { useRouter } from 'expo-router';
+import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function DecisionsScreen() {
   const theme = useTheme<Theme>();
@@ -239,6 +240,8 @@ export default function DecisionsScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <ProjectTabBar />
 
       {/* Filter Tabs */}
       <View style={styles.filterContainer}>

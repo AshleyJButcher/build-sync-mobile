@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../src/lib/currency';
 import { AddProductModal } from '../../src/components/AddProductModal';
 import { useRouter } from 'expo-router';
+import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function ProductsScreen() {
   const theme = useTheme<Theme>();
@@ -215,6 +216,8 @@ export default function ProductsScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <ProjectTabBar />
 
       {/* Category Filter */}
       {categories.length > 1 && (

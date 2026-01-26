@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
@@ -11,6 +11,7 @@ interface StatsCardProps {
   subtitle?: string;
   icon: keyof typeof Ionicons.glyphMap;
   variant?: 'default' | 'primary';
+  onPress?: () => void;
 }
 
 export function StatsCard({
@@ -19,13 +20,16 @@ export function StatsCard({
   subtitle,
   icon,
   variant = 'default',
+  onPress,
 }: StatsCardProps) {
   const theme = useTheme<Theme>();
 
   const isPrimary = variant === 'primary';
 
+  const CardComponent = onPress ? TouchableOpacity : View;
+
   return (
-    <View
+    <CardComponent
       style={[
         styles.card,
         {
@@ -33,6 +37,9 @@ export function StatsCard({
           borderColor: isPrimary ? GREEN_PRIMARY : theme.colors.border,
         },
       ]}
+      onPress={onPress}
+      disabled={!onPress}
+      activeOpacity={0.7}
     >
       <View style={styles.content}>
         <View style={styles.textContainer}>
@@ -89,7 +96,7 @@ export function StatsCard({
           />
         </View>
       </View>
-    </View>
+    </CardComponent>
   );
 }
 
