@@ -275,7 +275,7 @@ export function CreateProjectModal({
                     const numericValue = text.replace(/[^0-9.]/g, '');
                     setFormData({
                       ...formData,
-                      budget: numericValue ? numericValue : undefined,
+                      budget: numericValue ? parseFloat(numericValue) : undefined,
                     });
                     if (errors.budget) {
                       setErrors({ ...errors, budget: '' });

@@ -172,8 +172,9 @@ export default function MilestoneDetailScreen() {
     );
   }
 
-  const statusColor = getStatusColor(milestone.status);
-  const statusIcon = getStatusIcon(milestone.status);
+  const selectedMilestone = milestone!;
+  const statusColor = getStatusColor(selectedMilestone.status);
+  const statusIcon = getStatusIcon(selectedMilestone.status);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -213,7 +214,7 @@ export default function MilestoneDetailScreen() {
               variant="caption"
               style={[styles.statusText, { color: statusColor }]}
             >
-              {milestone.status.replace('-', ' ').toUpperCase()}
+              {selectedMilestone.status.replace('-', ' ').toUpperCase()}
             </Text>
           </View>
         </View>
@@ -221,15 +222,15 @@ export default function MilestoneDetailScreen() {
         {/* Milestone Info */}
         <View style={styles.infoSection}>
           <Text variant="headingLarge" style={[styles.milestoneTitle, { color: theme.colors.text }]}>
-            {milestone.title}
+            {selectedMilestone.title}
           </Text>
 
-          {milestone.description && (
+          {selectedMilestone.description && (
             <Text
               variant="body"
               style={[styles.description, { color: theme.colors.textSecondary }]}
             >
-              {milestone.description}
+              {selectedMilestone.description}
             </Text>
           )}
 
@@ -244,8 +245,8 @@ export default function MilestoneDetailScreen() {
               style={[styles.metaText, { color: theme.colors.textSecondary }]}
             >
               Due:{' '}
-              {milestone.due_date && isValid(new Date(milestone.due_date))
-                ? format(new Date(milestone.due_date), 'MMM d, yyyy')
+              {selectedMilestone.due_date && isValid(new Date(selectedMilestone.due_date))
+                ? format(new Date(selectedMilestone.due_date), 'MMM d, yyyy')
                 : 'No due date'}
             </Text>
           </View>
@@ -261,7 +262,7 @@ export default function MilestoneDetailScreen() {
               variant="body"
               style={[styles.progressPercentage, { color: statusColor }]}
             >
-              {milestone.completion_percentage}%
+              {selectedMilestone.completion_percentage}%
             </Text>
           </View>
 
@@ -277,7 +278,7 @@ export default function MilestoneDetailScreen() {
               style={[
                 styles.progressFill,
                 {
-                  width: `${milestone.completion_percentage}%`,
+                  width: `${selectedMilestone.completion_percentage}%`,
                   backgroundColor: statusColor,
                 },
               ]}
@@ -293,7 +294,7 @@ export default function MilestoneDetailScreen() {
                     styles.progressButton,
                     {
                       backgroundColor:
-                        milestone.completion_percentage === percentage
+                        selectedMilestone.completion_percentage === percentage
                           ? statusColor
                           : theme.colors.backgroundSecondary,
                     },
@@ -305,7 +306,7 @@ export default function MilestoneDetailScreen() {
                       styles.progressButtonText,
                       {
                         color:
-                          milestone.completion_percentage === percentage
+                          selectedMilestone.completion_percentage === percentage
                             ? '#FFFFFF'
                             : theme.colors.text,
                       },
@@ -339,7 +340,7 @@ export default function MilestoneDetailScreen() {
 
       <EditMilestoneModal
         visible={showEditModal}
-        milestone={milestone}
+        milestone={selectedMilestone}
         onClose={() => setShowEditModal(false)}
         onSuccess={() => setShowEditModal(false)}
       />

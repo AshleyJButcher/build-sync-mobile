@@ -26,6 +26,8 @@ const menuOptions: MenuOption[] = [
   { label: 'Milestones', icon: 'flag-outline', route: '/(tabs)/milestones' },
   { label: 'Decisions', icon: 'checkmark-circle-outline', route: '/(tabs)/decisions' },
   { label: 'Costs', icon: 'trending-up-outline', route: '/(tabs)/cost-changes' },
+  { label: 'Remedial', icon: 'construct-outline', route: '/(tabs)/remedial' },
+  { label: 'Chat', icon: 'chatbubbles-outline', route: '/(tabs)/chat' },
 ];
 
 const MENU_WIDTH = 280;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps } from 'react-native';
+import { Text as RNText, TextProps as RNTextProps, TextStyle } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { type Theme } from '../theme';
 
@@ -23,19 +23,16 @@ interface TextProps extends RNTextProps {
 export function Text({ variant = 'body', style, children, ...props }: TextProps) {
   const theme = useTheme<Theme>();
   const textVariant = theme.textVariants[variant];
+  const baseStyle: TextStyle = {
+    fontSize: textVariant.fontSize,
+    color: theme.colors.text,
+  };
+  if ('fontWeight' in textVariant && typeof textVariant.fontWeight === 'string') {
+    baseStyle.fontWeight = textVariant.fontWeight as TextStyle['fontWeight'];
+  }
 
   return (
-    <RNText
-      style={[
-        {
-          fontSize: textVariant.fontSize,
-          fontWeight: textVariant.fontWeight,
-          color: theme.colors.text,
-        },
-        style,
-      ]}
-      {...props}
-    >
+    <RNText style={[baseStyle, style]} {...props}>
       {children}
     </RNText>
   );

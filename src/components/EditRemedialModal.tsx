@@ -14,99 +14,86 @@ import { useTheme } from '@shopify/restyle';
 import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
-import { useUpdateMilestone, type Milestone } from '../hooks/useProjectData';
+import { useUpdateRemedialItem, type RemedialItem } from '../hooks/useProjectData';
 
 const STATUS_OPTIONS = [
-  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'open', label: 'Open' },
   { value: 'in-progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'delayed', label: 'Delayed' },
+  { value: 'resolved', label: 'Resolved' },
+  { value: 'closed', label: 'Closed' },
 ] as const;
 
-interface EditMilestoneModalProps {
+const PRIORITY_OPTIONS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+] as const;
+
+interface EditRemedialModalProps {
   visible: boolean;
-  milestone: Milestone | null;
+  item: RemedialItem | null;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export function EditMilestoneModal({
+export function EditRemedialModal({
   visible,
-  milestone,
+  item,
   onClose,
   onSuccess,
-}: EditMilestoneModalProps) {
+}: EditRemedialModalProps) {
   const theme = useTheme<Theme>();
-  const updateMilestone = useUpdateMilestone();
+  const updateRemedialItem = useUpdateRemedialItem();
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
-    due_date: string;
-    status: Milestone['status'];
-    completion_percentage: string;
+    status: RemedialItem['status'];
+    priority: RemedialItem['priority'];
   }>({
     title: '',
     description: '',
-    due_date: '',
-    status: 'upcoming',
-    completion_percentage: '0',
+    status: 'open',
+    priority: 'medium',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
 
   useEffect(() => {
-    if (milestone) {
+    if (item) {
       setFormData({
-        title: milestone.title,
-        description: milestone.description ?? '',
-        due_date: milestone.due_date ?? '',
-        status: milestone.status,
-        completion_percentage: milestone.completion_percentage?.toString() ?? '0',
+        title: item.title,
+        description: item.description ?? '',
+        status: item.status,
+        priority: item.priority,
       });
     }
-  }, [milestone]);
+  }, [item]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Milestone title is required';
-    }
-
-    if (formData.due_date && isNaN(Date.parse(formData.due_date))) {
-      newErrors.due_date = 'Invalid date format';
-    }
-
-    const percentage = parseInt(formData.completion_percentage, 10);
-    if (isNaN(percentage) || percentage < 0 || percentage > 100) {
-      newErrors.completion_percentage = 'Completion must be between 0 and 100';
-    }
-
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!validateForm() || !milestone) {
-      return;
-    }
+    if (!validateForm() || !item) return;
 
     try {
-      await updateMilestone.mutateAsync({
-        id: milestone.id,
+      await updateRemedialItem.mutateAsync({
+        id: item.id,
         title: formData.title.trim(),
         description: formData.description?.trim() || null,
-        due_date: formData.due_date || undefined,
         status: formData.status,
-        completion_percentage: parseInt(formData.completion_percentage, 10),
+        priority: formData.priority,
       });
-
       onSuccess?.();
       onClose();
     } catch (error) {
-      console.error('[EditMilestoneModal] Error updating milestone:', error);
+      console.error('[EditRemedialModal] Error:', error);
       setErrors({
-        submit: error instanceof Error ? error.message : 'Failed to update milestone',
+        submit: error instanceof Error ? error.message : 'Failed to update remedial item',
       });
     }
   };
@@ -116,29 +103,21 @@ export function EditMilestoneModal({
     onClose();
   };
 
-  if (!milestone) return null;
+  if (!item) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.modalOverlay}>
           <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.background },
-            ]}
+            style={[styles.modalContent, { backgroundColor: theme.colors.background }]}
           >
             <View style={styles.modalHeader}>
               <Text variant="headingMedium" style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Edit Milestone
+                Edit Remedial Item
               </Text>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
@@ -161,20 +140,14 @@ export function EditMilestoneModal({
                   ]}
                 >
                   <Ionicons name="alert-circle" size={20} color={theme.colors.error} />
-                  <Text
-                    variant="body"
-                    style={[styles.errorText, { color: theme.colors.error }]}
-                  >
+                  <Text variant="body" style={[styles.errorText, { color: theme.colors.error }]}>
                     {errors.submit}
                   </Text>
                 </View>
               )}
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Title *
                 </Text>
                 <TextInput
@@ -182,37 +155,27 @@ export function EditMilestoneModal({
                     styles.input,
                     {
                       color: theme.colors.text,
-                      borderColor: errors.title
-                        ? theme.colors.error
-                        : theme.colors.border,
+                      borderColor: errors.title ? theme.colors.error : theme.colors.border,
                       backgroundColor: theme.colors.background,
                     },
                   ]}
-                  placeholder="e.g., Foundation Complete"
+                  placeholder="e.g., Crack in wall"
                   placeholderTextColor={theme.colors.textSecondary}
                   value={formData.title}
                   onChangeText={(text) => {
                     setFormData({ ...formData, title: text });
-                    if (errors.title) {
-                      setErrors({ ...errors, title: '' });
-                    }
+                    if (errors.title) setErrors({ ...errors, title: '' });
                   }}
                 />
                 {errors.title && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
+                  <Text variant="caption" style={[styles.fieldError, { color: theme.colors.error }]}>
                     {errors.title}
                   </Text>
                 )}
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Description
                 </Text>
                 <TextInput
@@ -224,12 +187,10 @@ export function EditMilestoneModal({
                       backgroundColor: theme.colors.background,
                     },
                   ]}
-                  placeholder="Milestone description..."
+                  placeholder="Describe the issue..."
                   placeholderTextColor={theme.colors.textSecondary}
                   value={formData.description}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, description: text });
-                  }}
+                  onChangeText={(text) => setFormData({ ...formData, description: text })}
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
@@ -237,53 +198,62 @@ export function EditMilestoneModal({
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
-                  Due Date
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  Priority
                 </Text>
-                <TextInput
+                <TouchableOpacity
                   style={[
-                    styles.input,
+                    styles.pickerButton,
                     {
-                      color: theme.colors.text,
-                      borderColor: errors.due_date
-                        ? theme.colors.error
-                        : theme.colors.border,
+                      borderColor: theme.colors.border,
                       backgroundColor: theme.colors.background,
                     },
                   ]}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={theme.colors.textSecondary}
-                  value={formData.due_date}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, due_date: text });
-                    if (errors.due_date) {
-                      setErrors({ ...errors, due_date: '' });
-                    }
-                  }}
-                />
-                {errors.due_date && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
-                    {errors.due_date}
+                  onPress={() => setShowPriorityPicker(!showPriorityPicker)}
+                >
+                  <Text variant="body" style={{ color: theme.colors.text }}>
+                    {PRIORITY_OPTIONS.find((p) => p.value === formData.priority)?.label}
                   </Text>
+                  <Ionicons name="chevron-down" size={20} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+                {showPriorityPicker && (
+                  <View
+                    style={[
+                      styles.pickerOptions,
+                      {
+                        backgroundColor: theme.colors.background,
+                        borderColor: theme.colors.border,
+                      },
+                    ]}
+                  >
+                    {PRIORITY_OPTIONS.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={styles.pickerOption}
+                        onPress={() => {
+                          setFormData({ ...formData, priority: option.value });
+                          setShowPriorityPicker(false);
+                        }}
+                      >
+                        <Text variant="body" style={{ color: theme.colors.text }}>
+                          {option.label}
+                        </Text>
+                        {formData.priority === option.value && (
+                          <Ionicons name="checkmark" size={20} color={GREEN_PRIMARY} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 )}
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Status
                 </Text>
                 <TouchableOpacity
                   style={[
-                    styles.statusButton,
+                    styles.pickerButton,
                     {
                       borderColor: theme.colors.border,
                       backgroundColor: theme.colors.background,
@@ -291,22 +261,15 @@ export function EditMilestoneModal({
                   ]}
                   onPress={() => setShowStatusPicker(!showStatusPicker)}
                 >
-                  <Text
-                    variant="body"
-                    style={[styles.statusButtonText, { color: theme.colors.text }]}
-                  >
+                  <Text variant="body" style={{ color: theme.colors.text }}>
                     {STATUS_OPTIONS.find((s) => s.value === formData.status)?.label}
                   </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={theme.colors.textSecondary}
-                  />
+                  <Ionicons name="chevron-down" size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
                 {showStatusPicker && (
                   <View
                     style={[
-                      styles.statusPicker,
+                      styles.pickerOptions,
                       {
                         backgroundColor: theme.colors.background,
                         borderColor: theme.colors.border,
@@ -316,16 +279,13 @@ export function EditMilestoneModal({
                     {STATUS_OPTIONS.map((option) => (
                       <TouchableOpacity
                         key={option.value}
-                        style={styles.statusOption}
+                        style={styles.pickerOption}
                         onPress={() => {
                           setFormData({ ...formData, status: option.value });
                           setShowStatusPicker(false);
                         }}
                       >
-                        <Text
-                          variant="body"
-                          style={[styles.statusOptionText, { color: theme.colors.text }]}
-                        >
+                        <Text variant="body" style={{ color: theme.colors.text }}>
                           {option.label}
                         </Text>
                         {formData.status === option.value && (
@@ -337,59 +297,16 @@ export function EditMilestoneModal({
                 )}
               </View>
 
-              <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
-                  Completion Percentage
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: theme.colors.text,
-                      borderColor: errors.completion_percentage
-                        ? theme.colors.error
-                        : theme.colors.border,
-                      backgroundColor: theme.colors.background,
-                    },
-                  ]}
-                  placeholder="0"
-                  placeholderTextColor={theme.colors.textSecondary}
-                  value={formData.completion_percentage}
-                  onChangeText={(text) => {
-                    const numericValue = text.replace(/[^0-9]/g, '');
-                    setFormData({
-                      ...formData,
-                      completion_percentage: numericValue,
-                    });
-                    if (errors.completion_percentage) {
-                      setErrors({ ...errors, completion_percentage: '' });
-                    }
-                  }}
-                  keyboardType="number-pad"
-                />
-                {errors.completion_percentage && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
-                    {errors.completion_percentage}
-                  </Text>
-                )}
-              </View>
-
               <TouchableOpacity
                 style={[
                   styles.submitButton,
                   { backgroundColor: GREEN_PRIMARY },
-                  updateMilestone.isPending && styles.disabledButton,
+                  updateRemedialItem.isPending && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={updateMilestone.isPending}
+                disabled={updateRemedialItem.isPending}
               >
-                {updateMilestone.isPending ? (
+                {updateRemedialItem.isPending ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
                   <Text style={[styles.submitButtonText, { color: '#FFFFFF' }]}>
@@ -425,27 +342,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  form: {
-    flex: 1,
-  },
-  formContent: {
-    padding: 16,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 8,
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  modalTitle: { fontSize: 20, fontWeight: '600' },
+  closeButton: { padding: 4 },
+  form: { flex: 1 },
+  formContent: { padding: 16 },
+  inputGroup: { marginBottom: 20 },
+  label: { marginBottom: 8, fontSize: 14, fontWeight: '500' },
   input: {
     height: 48,
     borderWidth: 1,
@@ -461,11 +363,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-  fieldError: {
-    marginTop: 4,
-    fontSize: 12,
-  },
-  statusButton: {
+  fieldError: { marginTop: 4, fontSize: 12 },
+  pickerButton: {
     height: 48,
     borderWidth: 1,
     borderRadius: 8,
@@ -474,26 +373,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  statusButtonText: {
-    fontSize: 16,
-  },
-  statusPicker: {
+  pickerOptions: {
     marginTop: 8,
     borderWidth: 1,
     borderRadius: 8,
     maxHeight: 200,
     overflow: 'hidden',
   },
-  statusOption: {
+  pickerOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
-  },
-  statusOptionText: {
-    fontSize: 16,
   },
   errorContainer: {
     flexDirection: 'row',
@@ -504,11 +397,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
   },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  errorText: { flex: 1, fontSize: 14, fontWeight: '500' },
   submitButton: {
     height: 50,
     borderRadius: 8,
@@ -516,11 +405,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  disabledButton: { opacity: 0.6 },
+  submitButtonText: { fontSize: 16, fontWeight: '600' },
 });

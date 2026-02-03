@@ -20,6 +20,7 @@ import { useChatMessages, useSendMessage, useUpdateMessage, useDeleteMessage, ty
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useProjectMembers } from '../../src/hooks/useProjectMembers';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { format, isToday, isYesterday } from 'date-fns';
 
 export default function ChatScreen() {
@@ -149,9 +150,17 @@ export default function ChatScreen() {
       <View
         style={[
           styles.container,
-          { backgroundColor: theme.colors.background, paddingTop: insets.top },
+          { backgroundColor: theme.colors.background },
         ]}
       >
+        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background }]}>
+          <View style={styles.headerLeft}>
+            <ProjectMenuButton />
+            <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+              Chat
+            </Text>
+          </View>
+        </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubbles-outline" size={64} color={theme.colors.textSecondary} />
           <Text variant="headingMedium" style={[styles.emptyText, { color: theme.colors.text }]}>
@@ -174,12 +183,17 @@ export default function ChatScreen() {
       keyboardVerticalOffset={90}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background }]}>
-        <Text variant="headingMedium" style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Chat
-        </Text>
-        <Text variant="caption" style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
-          {members.length} member{members.length !== 1 ? 's' : ''}
-        </Text>
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <View style={styles.headerTitles}>
+            <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+              Chat
+            </Text>
+            <Text variant="caption" style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
+              {members.length} member{members.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        </View>
       </View>
 
       {isLoading ? (
@@ -398,18 +412,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  headerTitles: {
+    flex: 1,
+  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,

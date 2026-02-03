@@ -14,43 +14,44 @@ import { useTheme } from '@shopify/restyle';
 import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
-import { useCreateMilestone, useMilestones, type Milestone } from '../hooks/useProjectData';
+import { useCreateScheduleItem, type ScheduleItem } from '../hooks/useProjectData';
 import { useProjectStore } from '../store/useProjectStore';
 
 const STATUS_OPTIONS = [
-  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'scheduled', label: 'Scheduled' },
   { value: 'in-progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' },
-  { value: 'delayed', label: 'Delayed' },
+  { value: 'cancelled', label: 'Cancelled' },
 ] as const;
 
-interface AddMilestoneModalProps {
+interface AddScheduleModalProps {
   visible: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export function AddMilestoneModal({
+export function AddScheduleModal({
   visible,
   onClose,
   onSuccess,
-}: AddMilestoneModalProps) {
+}: AddScheduleModalProps) {
   const theme = useTheme<Theme>();
   const { selectedProjectId } = useProjectStore();
-  const { data: milestones } = useMilestones(selectedProjectId);
-  const createMilestone = useCreateMilestone();
+  const createScheduleItem = useCreateScheduleItem();
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
-    due_date: string;
-    status: Milestone['status'];
-    completion_percentage: string;
+    start_date: string;
+    end_date: string;
+    status: ScheduleItem['status'];
+    location: string;
   }>({
     title: '',
     description: '',
-    due_date: '',
-    status: 'upcoming',
-    completion_percentage: '0',
+    start_date: '',
+    end_date: '',
+    status: 'scheduled',
+    location: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showStatusPicker, setShowStatusPicker] = useState(false);
@@ -59,16 +60,15 @@ export function AddMilestoneModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Milestone title is required';
+      newErrors.title = 'Title is required';
     }
 
-    if (formData.due_date && isNaN(Date.parse(formData.due_date))) {
-      newErrors.due_date = 'Invalid date format';
+    if (formData.start_date && isNaN(Date.parse(formData.start_date))) {
+      newErrors.start_date = 'Invalid date format (use YYYY-MM-DD)';
     }
 
-    const percentage = parseInt(formData.completion_percentage, 10);
-    if (isNaN(percentage) || percentage < 0 || percentage > 100) {
-      newErrors.completion_percentage = 'Completion must be between 0 and 100';
+    if (formData.end_date && isNaN(Date.parse(formData.end_date))) {
+      newErrors.end_date = 'Invalid date format (use YYYY-MM-DD)';
     }
 
     setErrors(newErrors);
@@ -81,32 +81,31 @@ export function AddMilestoneModal({
     }
 
     try {
-      const currentCount = milestones?.length || 0;
-      await createMilestone.mutateAsync({
+      await createScheduleItem.mutateAsync({
         project_id: selectedProjectId,
         title: formData.title.trim(),
         description: formData.description?.trim() || null,
-        due_date: formData.due_date || new Date().toISOString().split('T')[0],
+        start_date: formData.start_date || new Date().toISOString().split('T')[0],
+        end_date: formData.end_date || null,
         status: formData.status,
-        sort_order: currentCount,
-        completion_percentage: parseInt(formData.completion_percentage, 10),
+        location: formData.location?.trim() || null,
       });
 
-      // Reset form
       setFormData({
         title: '',
         description: '',
-        due_date: '',
-        status: 'upcoming',
-        completion_percentage: '0',
+        start_date: '',
+        end_date: '',
+        status: 'scheduled',
+        location: '',
       });
       setErrors({});
       onSuccess?.();
       onClose();
     } catch (error) {
-      console.error('[AddMilestoneModal] Error creating milestone:', error);
+      console.error('[AddScheduleModal] Error creating schedule item:', error);
       setErrors({
-        submit: error instanceof Error ? error.message : 'Failed to create milestone',
+        submit: error instanceof Error ? error.message : 'Failed to create schedule item',
       });
     }
   };
@@ -115,9 +114,10 @@ export function AddMilestoneModal({
     setFormData({
       title: '',
       description: '',
-      due_date: '',
-      status: 'upcoming',
-      completion_percentage: '0',
+      start_date: '',
+      end_date: '',
+      status: 'scheduled',
+      location: '',
     });
     setErrors({});
     onClose();
@@ -143,7 +143,7 @@ export function AddMilestoneModal({
           >
             <View style={styles.modalHeader}>
               <Text variant="headingMedium" style={[styles.modalTitle, { color: theme.colors.text }]}>
-                Add Milestone
+                Add Schedule Item
               </Text>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
@@ -176,10 +176,7 @@ export function AddMilestoneModal({
               )}
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Title *
                 </Text>
                 <TextInput
@@ -187,37 +184,27 @@ export function AddMilestoneModal({
                     styles.input,
                     {
                       color: theme.colors.text,
-                      borderColor: errors.title
-                        ? theme.colors.error
-                        : theme.colors.border,
+                      borderColor: errors.title ? theme.colors.error : theme.colors.border,
                       backgroundColor: theme.colors.background,
                     },
                   ]}
-                  placeholder="e.g., Foundation Complete"
+                  placeholder="e.g., Site inspection"
                   placeholderTextColor={theme.colors.textSecondary}
                   value={formData.title}
                   onChangeText={(text) => {
                     setFormData({ ...formData, title: text });
-                    if (errors.title) {
-                      setErrors({ ...errors, title: '' });
-                    }
+                    if (errors.title) setErrors({ ...errors, title: '' });
                   }}
                 />
                 {errors.title && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
+                  <Text variant="caption" style={[styles.fieldError, { color: theme.colors.error }]}>
                     {errors.title}
                   </Text>
                 )}
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Description
                 </Text>
                 <TextInput
@@ -229,61 +216,94 @@ export function AddMilestoneModal({
                       backgroundColor: theme.colors.background,
                     },
                   ]}
-                  placeholder="Milestone description..."
+                  placeholder="Description..."
                   placeholderTextColor={theme.colors.textSecondary}
                   value={formData.description}
-                  onChangeText={(text) => {
-                    setFormData({ ...formData, description: text });
-                  }}
+                  onChangeText={(text) => setFormData({ ...formData, description: text })}
                   multiline
-                  numberOfLines={4}
+                  numberOfLines={3}
                   textAlignVertical="top"
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
-                  Due Date
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  Start Date
                 </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
                       color: theme.colors.text,
-                      borderColor: errors.due_date
-                        ? theme.colors.error
-                        : theme.colors.border,
+                      borderColor: errors.start_date ? theme.colors.error : theme.colors.border,
                       backgroundColor: theme.colors.background,
                     },
                   ]}
                   placeholder="YYYY-MM-DD"
                   placeholderTextColor={theme.colors.textSecondary}
-                  value={formData.due_date}
+                  value={formData.start_date}
                   onChangeText={(text) => {
-                    setFormData({ ...formData, due_date: text });
-                    if (errors.due_date) {
-                      setErrors({ ...errors, due_date: '' });
-                    }
+                    setFormData({ ...formData, start_date: text });
+                    if (errors.start_date) setErrors({ ...errors, start_date: '' });
                   }}
                 />
-                {errors.due_date && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
-                    {errors.due_date}
+                {errors.start_date && (
+                  <Text variant="caption" style={[styles.fieldError, { color: theme.colors.error }]}>
+                    {errors.start_date}
                   </Text>
                 )}
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  End Date
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.colors.text,
+                      borderColor: errors.end_date ? theme.colors.error : theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                    },
+                  ]}
+                  placeholder="YYYY-MM-DD (optional)"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={formData.end_date}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, end_date: text });
+                    if (errors.end_date) setErrors({ ...errors, end_date: '' });
+                  }}
+                />
+                {errors.end_date && (
+                  <Text variant="caption" style={[styles.fieldError, { color: theme.colors.error }]}>
+                    {errors.end_date}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
+                  Location
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.colors.text,
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.background,
+                    },
+                  ]}
+                  placeholder="e.g., Site A"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={formData.location}
+                  onChangeText={(text) => setFormData({ ...formData, location: text })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text variant="caption" style={[styles.label, { color: theme.colors.textSecondary }]}>
                   Status
                 </Text>
                 <TouchableOpacity
@@ -296,17 +316,10 @@ export function AddMilestoneModal({
                   ]}
                   onPress={() => setShowStatusPicker(!showStatusPicker)}
                 >
-                  <Text
-                    variant="body"
-                    style={[styles.statusButtonText, { color: theme.colors.text }]}
-                  >
+                  <Text variant="body" style={[styles.statusButtonText, { color: theme.colors.text }]}>
                     {STATUS_OPTIONS.find((s) => s.value === formData.status)?.label}
                   </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={theme.colors.textSecondary}
-                  />
+                  <Ionicons name="chevron-down" size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
                 {showStatusPicker && (
                   <View
@@ -327,10 +340,7 @@ export function AddMilestoneModal({
                           setShowStatusPicker(false);
                         }}
                       >
-                        <Text
-                          variant="body"
-                          style={[styles.statusOptionText, { color: theme.colors.text }]}
-                        >
+                        <Text variant="body" style={[styles.statusOptionText, { color: theme.colors.text }]}>
                           {option.label}
                         </Text>
                         {formData.status === option.value && (
@@ -342,63 +352,20 @@ export function AddMilestoneModal({
                 )}
               </View>
 
-              <View style={styles.inputGroup}>
-                <Text
-                  variant="caption"
-                  style={[styles.label, { color: theme.colors.textSecondary }]}
-                >
-                  Completion Percentage
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: theme.colors.text,
-                      borderColor: errors.completion_percentage
-                        ? theme.colors.error
-                        : theme.colors.border,
-                      backgroundColor: theme.colors.background,
-                    },
-                  ]}
-                  placeholder="0"
-                  placeholderTextColor={theme.colors.textSecondary}
-                  value={formData.completion_percentage}
-                  onChangeText={(text) => {
-                    const numericValue = text.replace(/[^0-9]/g, '');
-                    setFormData({
-                      ...formData,
-                      completion_percentage: numericValue,
-                    });
-                    if (errors.completion_percentage) {
-                      setErrors({ ...errors, completion_percentage: '' });
-                    }
-                  }}
-                  keyboardType="number-pad"
-                />
-                {errors.completion_percentage && (
-                  <Text
-                    variant="caption"
-                    style={[styles.fieldError, { color: theme.colors.error }]}
-                  >
-                    {errors.completion_percentage}
-                  </Text>
-                )}
-              </View>
-
               <TouchableOpacity
                 style={[
                   styles.submitButton,
                   { backgroundColor: GREEN_PRIMARY },
-                  createMilestone.isPending && styles.disabledButton,
+                  createScheduleItem.isPending && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={createMilestone.isPending}
+                disabled={createScheduleItem.isPending}
               >
-                {createMilestone.isPending ? (
+                {createScheduleItem.isPending ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
                   <Text style={[styles.submitButtonText, { color: '#FFFFFF' }]}>
-                    Add Milestone
+                    Add Schedule Item
                   </Text>
                 )}
               </TouchableOpacity>
@@ -459,7 +426,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 80,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 16,
