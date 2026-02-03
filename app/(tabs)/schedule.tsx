@@ -26,7 +26,7 @@ export default function ScheduleScreen() {
   const router = useRouter();
   const { selectedProjectId } = useProjectStore();
   const { role } = useAuth();
-  const { data: scheduleItems, isLoading, refetch } = useScheduleItems(selectedProjectId);
+  const { data: scheduleItems, isLoading, isError, refetch } = useScheduleItems(selectedProjectId);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -168,6 +168,8 @@ export default function ScheduleScreen() {
     );
   }
 
+  const hasNoItems = !scheduleItems || scheduleItems.length === 0;
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -187,23 +189,36 @@ export default function ScheduleScreen() {
         )}
       </View>
 
-      {scheduleItems && scheduleItems.length === 0 ? (
+      {hasNoItems ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="calendar-outline" size={64} color={theme.colors.textSecondary} />
           <Text variant="headingMedium" style={[styles.emptyTitle, { color: theme.colors.text }]}>
-            No Schedule Items
+            {isError ? 'Unable to load schedule' : 'No Schedule Items'}
           </Text>
           <Text variant="body" style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-            {canEditSchedule
-              ? 'Add your first schedule item to get started'
-              : 'No schedule items yet'}
+            {isError
+              ? 'Pull down to retry or check your connection.'
+              : canEditSchedule
+                ? 'Add your first schedule item to get started'
+                : 'No schedule items yet'}
           </Text>
+          {isError && (
+            <TouchableOpacity
+              style={[styles.retryButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => refetch()}
+            >
+              <Text variant="body" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                Retry
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <FlatList
           data={scheduleItems || []}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          style={styles.list}
           contentContainerStyle={styles.listContent}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
@@ -249,6 +264,15 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     padding: 16,

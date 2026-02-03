@@ -414,12 +414,12 @@ The result will be a mobile-native version of the BuildSync project management p
 - [ ] Remedial Works module
 
 ### Step 8: Polish & Testing (Week 8-9)
-- [ ] Error handling
-- [ ] Loading states
-- [ ] Offline support
-- [ ] Performance optimization
-- [ ] Testing on iOS/Android
-- [ ] Bug fixes
+- [x] Error handling (Error Boundary, consistent Alert.alert for mutations)
+- [x] Loading states (LoadingScreen component, spinners on list screens)
+- [x] Offline support (persisted query cache, OfflineBanner, retry)
+- [x] Performance optimization (FlatList initialNumToRender, windowSize, removeClippedSubviews)
+- [ ] Testing on iOS/Android (see TESTING.md)
+- [ ] Bug fixes (ongoing)
 
 ---
 
