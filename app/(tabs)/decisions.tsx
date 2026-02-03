@@ -17,8 +17,8 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddDecisionModal } from '../../src/components/AddDecisionModal';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { useRouter } from 'expo-router';
-import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function DecisionsScreen() {
   const theme = useTheme<Theme>();
@@ -218,10 +218,12 @@ export default function DecisionsScreen() {
       ]}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View>
-          <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
-            Decisions
-          </Text>
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <View>
+            <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+              Decisions
+            </Text>
           {pendingCount > 0 && (
             <Text
               variant="caption"
@@ -230,6 +232,7 @@ export default function DecisionsScreen() {
               {pendingCount} pending
             </Text>
           )}
+          </View>
         </View>
         {canEditDecisions && (
           <TouchableOpacity
@@ -240,8 +243,6 @@ export default function DecisionsScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <ProjectTabBar />
 
       {/* Filter Tabs */}
       <View style={styles.filterContainer}>
@@ -330,6 +331,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   headerTitle: {
     fontSize: 28,

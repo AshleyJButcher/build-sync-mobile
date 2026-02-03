@@ -18,8 +18,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../src/lib/currency';
 import { format } from 'date-fns';
 import { AddCostChangeModal } from '../../src/components/AddCostChangeModal';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { useRouter } from 'expo-router';
-import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function CostChangesScreen() {
   const theme = useTheme<Theme>();
@@ -267,18 +267,21 @@ export default function CostChangesScreen() {
       ]}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View>
-          <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
-            Cost Changes
-          </Text>
-          {pendingCount > 0 && (
-            <Text
-              variant="caption"
-              style={[styles.pendingBadge, { color: theme.colors.textSecondary }]}
-            >
-              {pendingCount} pending
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <View>
+            <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+              Cost Changes
             </Text>
-          )}
+            {pendingCount > 0 && (
+              <Text
+                variant="caption"
+                style={[styles.pendingBadge, { color: theme.colors.textSecondary }]}
+              >
+                {pendingCount} pending
+              </Text>
+            )}
+          </View>
         </View>
         {canEditCostChanges && (
           <TouchableOpacity
@@ -289,8 +292,6 @@ export default function CostChangesScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <ProjectTabBar />
 
       {/* Summary Cards */}
       {totals.total !== 0 && (
@@ -408,6 +409,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   headerTitle: {
     fontSize: 28,

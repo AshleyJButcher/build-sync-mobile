@@ -6,6 +6,7 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ProjectSelector } from '../../src/components/ProjectSelector';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { useProject } from '../../src/hooks/useProjects';
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { StatsCard } from '../../src/components/StatsCard';
@@ -18,7 +19,6 @@ import {
 import { useMemo, useState } from 'react';
 import { formatCurrency } from '../../src/lib/currency';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function HomeScreen() {
   const theme = useTheme<Theme>();
@@ -89,9 +89,12 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.header}>
-          <Text variant="headingLarge" style={[styles.title, { color: theme.colors.text }]}>
-            Dashboard
-          </Text>
+          <View style={styles.headerLeft}>
+            <ProjectMenuButton />
+            <Text variant="headingLarge" style={[styles.title, { color: theme.colors.text }]}>
+              Dashboard
+            </Text>
+          </View>
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -103,21 +106,6 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <ProjectSelector />
         </View>
-
-        {selectedProjectId && (
-          <View
-            style={[
-              styles.tabBarContainer,
-              {
-                borderTopColor: theme.colors.border,
-                borderBottomColor: theme.colors.border,
-                backgroundColor: theme.colors.backgroundSecondary,
-              },
-            ]}
-          >
-            <ProjectTabBar />
-          </View>
-        )}
 
         {selectedProjectId && (
         <>
@@ -227,6 +215,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -244,13 +236,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 16,
-  },
-  tabBarContainer: {
-    marginTop: 12,
-    marginBottom: 20,
-    marginHorizontal: -16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
   },
   sectionTitle: {
     marginBottom: 8,

@@ -17,8 +17,8 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddMilestoneModal } from '../../src/components/AddMilestoneModal';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { useRouter } from 'expo-router';
-import { ProjectTabBar } from '../../src/components/ProjectTabBar';
 
 export default function MilestonesScreen() {
   const theme = useTheme<Theme>();
@@ -218,9 +218,12 @@ export default function MilestonesScreen() {
       ]}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Milestones
-        </Text>
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+            Milestones
+          </Text>
+        </View>
         {canEditMilestones && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
@@ -230,8 +233,6 @@ export default function MilestonesScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <ProjectTabBar />
 
       {milestones && milestones.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -288,6 +289,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 28,

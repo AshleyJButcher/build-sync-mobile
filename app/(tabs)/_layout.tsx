@@ -1,9 +1,22 @@
 import { Tabs } from 'expo-router';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomTabBar } from '@react-navigation/bottom-tabs';
+import { ProjectSideMenu } from '../../src/components/ProjectSideMenu';
+
+function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
+  return (
+    <View>
+      <ProjectSideMenu />
+      <BottomTabBar {...props} />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#4CAF50',
