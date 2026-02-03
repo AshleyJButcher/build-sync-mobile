@@ -3,10 +3,12 @@ import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { ProjectSideMenu } from '../../src/components/ProjectSideMenu';
+import { OfflineBanner } from '../../src/components/OfflineBanner';
 
 function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
   return (
     <View>
+      <OfflineBanner />
       <ProjectSideMenu />
       <BottomTabBar {...props} />
     </View>

@@ -919,9 +919,16 @@ export function useUpdateRemedialItem() {
       id,
       ...data
     }: Partial<RemedialItem> & { id: string }) => {
+      const payload = { ...data };
+      if (
+        (payload.status === 'resolved' || payload.status === 'closed') &&
+        payload.resolved_at == null
+      ) {
+        payload.resolved_at = new Date().toISOString();
+      }
       const { data: item, error } = await supabase
         .from('remedial_items')
-        .update(data)
+        .update(payload)
         .eq('id', id)
         .select()
         .single();

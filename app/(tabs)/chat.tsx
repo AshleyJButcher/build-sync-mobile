@@ -153,7 +153,7 @@ export default function ChatScreen() {
           { backgroundColor: theme.colors.background },
         ]}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
           <View style={styles.headerLeft}>
             <ProjectMenuButton />
             <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
@@ -182,7 +182,7 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.colors.background, borderBottomColor: theme.colors.border }]}>
         <View style={styles.headerLeft}>
           <ProjectMenuButton />
           <View style={styles.headerTitles}>
@@ -417,7 +417,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   headerLeft: {
     flexDirection: 'row',

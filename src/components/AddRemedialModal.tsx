@@ -69,7 +69,11 @@ export function AddRemedialModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm() || !selectedProjectId) return;
+    if (!selectedProjectId) {
+      setErrors((prev) => ({ ...prev, project: 'Please select a project' }));
+      return;
+    }
+    if (!validateForm()) return;
 
     try {
       await createRemedialItem.mutateAsync({
@@ -122,6 +126,22 @@ export function AddRemedialModal({
               contentContainerStyle={styles.formContent}
               keyboardShouldPersistTaps="handled"
             >
+              {errors.project && (
+                <View
+                  style={[
+                    styles.errorContainer,
+                    {
+                      backgroundColor: `${theme.colors.error}20`,
+                      borderColor: theme.colors.error,
+                    },
+                  ]}
+                >
+                  <Ionicons name="alert-circle" size={20} color={theme.colors.error} />
+                  <Text variant="body" style={[styles.errorText, { color: theme.colors.error }]}>
+                    {errors.project}
+                  </Text>
+                </View>
+              )}
               {errors.submit && (
                 <View
                   style={[
@@ -294,10 +314,10 @@ export function AddRemedialModal({
                 style={[
                   styles.submitButton,
                   { backgroundColor: GREEN_PRIMARY },
-                  createRemedialItem.isPending && styles.disabledButton,
+                  (createRemedialItem.isPending || !selectedProjectId) && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={createRemedialItem.isPending}
+                disabled={createRemedialItem.isPending || !selectedProjectId}
               >
                 {createRemedialItem.isPending ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />

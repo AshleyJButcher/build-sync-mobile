@@ -15,7 +15,7 @@ import { useScheduleItems, type ScheduleItem } from '../../src/hooks/useProjectD
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { AddScheduleModal } from '../../src/components/AddScheduleModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
 import { useRouter } from 'expo-router';
@@ -34,8 +34,13 @@ export default function ScheduleScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('[ScheduleScreen] Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -100,8 +105,13 @@ export default function ScheduleScreen() {
           <View style={styles.metaRow}>
             <Ionicons name="calendar-outline" size={16} color={theme.colors.textSecondary} />
             <Text variant="caption" style={[styles.metaText, { color: theme.colors.textSecondary }]}>
-              {format(new Date(item.start_date), 'MMM d, yyyy')}
-              {item.end_date ? ` – ${format(new Date(item.end_date), 'MMM d, yyyy')}` : ''}
+              {(() => {
+                const start = item.start_date ? new Date(item.start_date) : null;
+                const end = item.end_date ? new Date(item.end_date) : null;
+                const startStr = start && isValid(start) ? format(start, 'MMM d, yyyy') : 'TBD';
+                const endStr = end && isValid(end) ? format(end, 'MMM d, yyyy') : (item.end_date ? 'TBD' : '');
+                return endStr ? `${startStr} – ${endStr}` : startStr;
+              })()}
             </Text>
           </View>
           {item.location ? (
@@ -195,6 +205,10 @@ export default function ScheduleScreen() {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          removeClippedSubviews={true}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

@@ -66,6 +66,7 @@ export function EditScheduleModal({
         status: item.status,
         location: item.location ?? '',
       });
+      setErrors({});
     }
   }, [item]);
 
@@ -132,7 +133,7 @@ export function EditScheduleModal({
         style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
           <View
             style={[
               styles.modalContent,
@@ -376,6 +377,10 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    flex: 1,
     justifyContent: 'flex-end',
   },
   modalContent: {

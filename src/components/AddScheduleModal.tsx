@@ -76,9 +76,11 @@ export function AddScheduleModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm() || !selectedProjectId) {
+    if (!selectedProjectId) {
+      setErrors((prev) => ({ ...prev, project: 'Please select a project' }));
       return;
     }
+    if (!validateForm()) return;
 
     try {
       await createScheduleItem.mutateAsync({
@@ -134,7 +136,7 @@ export function AddScheduleModal({
         style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
           <View
             style={[
               styles.modalContent,
@@ -155,6 +157,25 @@ export function AddScheduleModal({
               contentContainerStyle={styles.formContent}
               keyboardShouldPersistTaps="handled"
             >
+              {errors.project && (
+                <View
+                  style={[
+                    styles.errorContainer,
+                    {
+                      backgroundColor: `${theme.colors.error}20`,
+                      borderColor: theme.colors.error,
+                    },
+                  ]}
+                >
+                  <Ionicons name="alert-circle" size={20} color={theme.colors.error} />
+                  <Text
+                    variant="body"
+                    style={[styles.errorText, { color: theme.colors.error }]}
+                  >
+                    {errors.project}
+                  </Text>
+                </View>
+              )}
               {errors.submit && (
                 <View
                   style={[
@@ -356,10 +377,10 @@ export function AddScheduleModal({
                 style={[
                   styles.submitButton,
                   { backgroundColor: GREEN_PRIMARY },
-                  createScheduleItem.isPending && styles.disabledButton,
+                  (createScheduleItem.isPending || !selectedProjectId) && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={createScheduleItem.isPending}
+                disabled={createScheduleItem.isPending || !selectedProjectId}
               >
                 {createScheduleItem.isPending ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
@@ -381,6 +402,10 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    flex: 1,
     justifyContent: 'flex-end',
   },
   modalContent: {

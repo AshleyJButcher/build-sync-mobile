@@ -14,6 +14,8 @@ export function ProjectMenuButton() {
       onPress={() => setProjectMenuOpen(true)}
       style={styles.button}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      accessibilityLabel="Open project menu"
+      accessibilityRole="button"
     >
       <Ionicons name="menu" size={26} color={theme.colors.text} />
     </TouchableOpacity>
