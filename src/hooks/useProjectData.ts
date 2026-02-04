@@ -723,7 +723,7 @@ export function useScheduleItems(projectId: string | null) {
       if (!projectId) return [];
 
       const { data, error } = await supabase
-        .from('schedule_items')
+        .from('scheduled_tasks')
         .select('*')
         .eq('project_id', projectId)
         .order('start_date', { ascending: true });
@@ -746,7 +746,7 @@ export function useCreateScheduleItem() {
       if (!user) throw new Error('Not authenticated');
 
       const { data: item, error } = await supabase
-        .from('schedule_items')
+        .from('scheduled_tasks')
         .insert({ ...data, created_by: user.id })
         .select()
         .single();
@@ -757,7 +757,7 @@ export function useCreateScheduleItem() {
         user.id,
         data.project_id,
         'created',
-        'schedule_item',
+        'scheduled_task',
         item.id,
         item.title
       );
@@ -782,7 +782,7 @@ export function useUpdateScheduleItem() {
       ...data
     }: Partial<ScheduleItem> & { id: string }) => {
       const { data: item, error } = await supabase
-        .from('schedule_items')
+        .from('scheduled_tasks')
         .update(data)
         .eq('id', id)
         .select()
@@ -795,7 +795,7 @@ export function useUpdateScheduleItem() {
           user.id,
           item.project_id,
           'updated',
-          'schedule_item',
+          'scheduled_task',
           item.id,
           item.title
         );
@@ -826,7 +826,7 @@ export function useDeleteScheduleItem() {
       name: string;
     }) => {
       const { error } = await supabase
-        .from('schedule_items')
+        .from('scheduled_tasks')
         .delete()
         .eq('id', id);
 
@@ -837,7 +837,7 @@ export function useDeleteScheduleItem() {
           user.id,
           projectId,
           'deleted',
-          'schedule_item',
+          'scheduled_task',
           id,
           name
         );
