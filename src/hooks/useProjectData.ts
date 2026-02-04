@@ -92,6 +92,17 @@ export interface RemedialItem {
   resolved_at: string | null;
 }
 
+export interface Drawing {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  file_url: string;
+  file_name: string;
+  uploaded_by: string;
+  created_at: string;
+}
+
 // Helper to create activity
 async function createActivity(
   userId: string,
@@ -994,6 +1005,135 @@ export function useDeleteRemedialItem() {
       queryClient.invalidateQueries({
         queryKey: ['remedialItems', data.projectId],
       });
+    },
+  });
+}
+
+// Drawings
+export function useDrawings(projectId: string | null) {
+  return useQuery({
+    queryKey: ['drawings', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+
+      const { data, error } = await supabase
+        .from('drawings')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Drawing[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      data: Omit<Drawing, 'id' | 'created_at' | 'uploaded_by'>
+    ) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: drawing, error } = await supabase
+        .from('drawings')
+        .insert({ ...data, uploaded_by: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await createActivity(
+        user.id,
+        data.project_id,
+        'created',
+        'drawing',
+        drawing.id,
+        drawing.title
+      );
+
+      return drawing;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.project_id] });
+    },
+  });
+}
+
+export function useUpdateDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: Partial<Drawing> & { id: string }) => {
+      const { data: drawing, error } = await supabase
+        .from('drawings')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          drawing.project_id,
+          'updated',
+          'drawing',
+          drawing.id,
+          drawing.title
+        );
+      }
+
+      return drawing;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.project_id] });
+    },
+  });
+}
+
+export function useDeleteDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      projectId,
+      name,
+    }: {
+      id: string;
+      projectId: string;
+      name: string;
+    }) => {
+      const { error } = await supabase.from('drawings').delete().eq('id', id);
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          projectId,
+          'deleted',
+          'drawing',
+          id,
+          name
+        );
+      }
+
+      return { projectId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.projectId] });
     },
   });
 }

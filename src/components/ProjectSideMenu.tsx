@@ -23,6 +23,7 @@ interface MenuOption {
 const menuOptions: MenuOption[] = [
   { label: 'Dashboard', icon: 'home-outline', route: '/(tabs)' },
   { label: 'Products', icon: 'cube-outline', route: '/(tabs)/products' },
+  { label: 'Drawings', icon: 'document-text-outline', route: '/(tabs)/drawings' },
   { label: 'Milestones', icon: 'flag-outline', route: '/(tabs)/milestones' },
   { label: 'Decisions', icon: 'checkmark-circle-outline', route: '/(tabs)/decisions' },
   { label: 'Costs', icon: 'trending-up-outline', route: '/(tabs)/cost-changes' },

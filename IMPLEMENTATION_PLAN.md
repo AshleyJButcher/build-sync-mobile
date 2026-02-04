@@ -262,32 +262,37 @@ The result will be a mobile-native version of the BuildSync project management p
    - Category filtering
    - Paint color picker
 
-2. **Milestones:**
+2. **Drawings:**
+   - Drawing list
+   - Drawing upload/view
+   - File management
+
+3. **Milestones:**
    - Timeline view
    - Add/edit milestone screens
    - Progress indicators
 
-3. **Decisions:**
+4. **Decisions:**
    - Decision list
    - Decision detail screen
    - Approval actions
 
-4. **Cost Changes:**
+5. **Cost Changes:**
    - Cost change list
    - Add/edit cost change screens
    - Currency formatting
 
-5. **Chat:**
+6. **Chat:**
    - Chat list
    - Chat conversation screen
    - Photo sharing
    - Real-time updates
 
-6. **Schedule:**
+7. **Schedule:**
    - Calendar view
    - Schedule item management
 
-7. **Remedial Works:**
+8. **Remedial Works:**
    - Issue list
    - Issue detail screen
    - Status management
@@ -406,6 +411,7 @@ The result will be a mobile-native version of the BuildSync project management p
 
 ### Step 7: Feature Modules (Week 5-8)
 - [ ] Products module
+- [ ] Drawings module
 - [ ] Milestones module
 - [ ] Decisions module
 - [ ] Cost Changes module
@@ -504,6 +510,7 @@ The result will be a mobile-native version of the BuildSync project management p
 - [ ] Project components
 - [ ] Dashboard components
 - [ ] Product components
+- [ ] Drawing components
 - [ ] Milestone components
 - [ ] Decision components
 - [ ] Cost change components

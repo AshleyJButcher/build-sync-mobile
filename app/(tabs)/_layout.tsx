@@ -50,6 +50,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="drawings"
+        options={{
+          href: null, // Hide from tab bar but keep as route
+        }}
+      />
+      <Tabs.Screen
         name="milestones"
         options={{
           href: null, // Hide from tab bar but keep as route
