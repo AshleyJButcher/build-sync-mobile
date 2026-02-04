@@ -7,6 +7,7 @@ import { TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ProjectSelector } from '../../src/components/ProjectSelector';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useProject } from '../../src/hooks/useProjects';
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { StatsCard } from '../../src/components/StatsCard';
@@ -23,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function HomeScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
-  const { user, role, logout } = useAuth();
+  const { user, role } = useAuth();
   const router = useRouter();
   const { selectedProjectId } = useProjectStore();
   const [refreshing, setRefreshing] = useState(false);
@@ -32,11 +33,6 @@ export default function HomeScreen() {
   const { data: milestones, refetch: refetchMilestones } = useMilestones(selectedProjectId);
   const { data: decisions, refetch: refetchDecisions } = useDecisions(selectedProjectId);
   const { data: costChanges, refetch: refetchCostChanges } = useCostChanges(selectedProjectId);
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -95,12 +91,7 @@ export default function HomeScreen() {
               Dashboard
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
+          <HeaderRightActions />
         </View>
 
         <View style={styles.section}>
@@ -222,17 +213,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-  },
-  logoutButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
   },
   section: {
     marginBottom: 16,

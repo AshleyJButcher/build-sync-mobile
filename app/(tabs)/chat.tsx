@@ -21,6 +21,7 @@ import { useProjectStore } from '../../src/store/useProjectStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useProjectMembers } from '../../src/hooks/useProjectMembers';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { format, isToday, isYesterday } from 'date-fns';
 
 export default function ChatScreen() {
@@ -160,6 +161,7 @@ export default function ChatScreen() {
               Chat
             </Text>
           </View>
+          <HeaderRightActions />
         </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubbles-outline" size={64} color={theme.colors.textSecondary} />
@@ -194,6 +196,7 @@ export default function ChatScreen() {
             </Text>
           </View>
         </View>
+        <HeaderRightActions />
       </View>
 
       {isLoading ? (

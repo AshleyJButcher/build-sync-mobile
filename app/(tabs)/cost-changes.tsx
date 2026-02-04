@@ -19,6 +19,7 @@ import { formatCurrency } from '../../src/lib/currency';
 import { format } from 'date-fns';
 import { AddCostChangeModal } from '../../src/components/AddCostChangeModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
 
 export default function CostChangesScreen() {
@@ -283,14 +284,16 @@ export default function CostChangesScreen() {
             )}
           </View>
         </View>
-        {canEditCostChanges && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditCostChanges && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {/* Summary Cards */}

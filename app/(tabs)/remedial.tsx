@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddRemedialModal } from '../../src/components/AddRemedialModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
 
 export default function RemedialScreen() {
@@ -161,14 +162,16 @@ export default function RemedialScreen() {
             Remedial Works
           </Text>
         </View>
-        {canEditRemedial && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditRemedial && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {remedialItems && remedialItems.length === 0 ? (

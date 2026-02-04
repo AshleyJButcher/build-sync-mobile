@@ -77,6 +77,21 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null, // Open from bell icon in header
+        }}
+      />
+      <Tabs.Screen
         name="remedial"
         options={{
           href: null,

@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, isValid } from 'date-fns';
 import { AddScheduleModal } from '../../src/components/AddScheduleModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
 
 export default function ScheduleScreen() {
@@ -179,14 +180,16 @@ export default function ScheduleScreen() {
             Schedule
           </Text>
         </View>
-        {canEditSchedule && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditSchedule && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {hasNoItems ? (

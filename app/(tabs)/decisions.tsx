@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddDecisionModal } from '../../src/components/AddDecisionModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
 
 export default function DecisionsScreen() {
@@ -234,14 +235,16 @@ export default function DecisionsScreen() {
           )}
           </View>
         </View>
-        {canEditDecisions && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditDecisions && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {/* Filter Tabs */}

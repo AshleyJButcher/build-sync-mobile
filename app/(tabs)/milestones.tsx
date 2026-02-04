@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddMilestoneModal } from '../../src/components/AddMilestoneModal';
 import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
 
 export default function MilestonesScreen() {
@@ -224,14 +225,16 @@ export default function MilestonesScreen() {
             Milestones
           </Text>
         </View>
-        {canEditMilestones && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditMilestones && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {milestones && milestones.length === 0 ? (

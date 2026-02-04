@@ -17,6 +17,7 @@ import { useProjectStore } from '../../src/store/useProjectStore';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { CreateProjectModal } from '../../src/components/CreateProjectModal';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProjectsScreen() {
@@ -155,14 +156,16 @@ export default function ProjectsScreen() {
         <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
           Projects
         </Text>
-        {canCreateProject && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowCreateDialog(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canCreateProject && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowCreateDialog(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {projects && projects.length === 0 ? (
