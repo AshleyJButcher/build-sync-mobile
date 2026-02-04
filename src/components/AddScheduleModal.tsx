@@ -131,6 +131,7 @@ export function AddScheduleModal({
       transparent
       animationType="slide"
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
       <KeyboardAvoidingView
         style={styles.modalOverlay}
@@ -411,6 +412,7 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    height: '90%',
     maxHeight: '90%',
     paddingBottom: 32,
   },
