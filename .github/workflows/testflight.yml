@@ -1,0 +1,48 @@
+# Build iOS with EAS and submit to TestFlight.
+# Triggered on push to main or manually via workflow_dispatch.
+#
+# Required secrets:
+#   EXPO_TOKEN - Expo access token (create at https://expo.dev/accounts/[account]/settings/access-tokens)
+#
+# For EAS Submit to TestFlight you must also:
+# 1. Set ascAppId in eas.json (App Store Connect > Your App > App Information > Apple ID)
+# 2. Configure Apple credentials: run `eas credentials --platform ios` and choose
+#    "App Store Connect: Manage your API Key" or "App Specific Password" for EAS Submit
+#    See: https://docs.expo.dev/submit/ios/#submitting-your-app-using-cicd-services
+
+name: EAS TestFlight
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-submit:
+    name: Build and submit to TestFlight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build iOS (production)
+        run: eas build --platform ios --profile production --non-interactive
+
+      - name: Submit to TestFlight
+        run: eas submit --platform ios --latest --non-interactive
