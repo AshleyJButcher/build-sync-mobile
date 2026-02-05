@@ -28,6 +28,7 @@ const menuOptions: MenuOption[] = [
   { label: 'Decisions', icon: 'checkmark-circle-outline', route: '/(tabs)/decisions' },
   { label: 'Costs', icon: 'trending-up-outline', route: '/(tabs)/cost-changes' },
   { label: 'Remedial', icon: 'construct-outline', route: '/(tabs)/remedial' },
+  { label: 'Team members', icon: 'people-outline', route: '/(tabs)/project-members' },
   { label: 'Chat', icon: 'chatbubbles-outline', route: '/(tabs)/chat' },
 ];
 

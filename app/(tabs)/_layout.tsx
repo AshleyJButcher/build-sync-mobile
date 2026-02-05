@@ -104,6 +104,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="project-members"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
           href: null, // Per-project chat: access via side menu

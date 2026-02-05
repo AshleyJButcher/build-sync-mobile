@@ -115,6 +115,21 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        <View
+          style={[
+            styles.workspaceNotice,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
+          <Ionicons name="globe-outline" size={22} color={theme.colors.textSecondary} />
+          <Text variant="bodySmall" style={[styles.workspaceNoticeText, { color: theme.colors.textSecondary }]}>
+            Workspace details must be configured on the web.
+          </Text>
+        </View>
+
         <TouchableOpacity
           style={[styles.logoutButton, { borderColor: theme.colors.border }]}
           onPress={handleLogout}
@@ -195,6 +210,18 @@ const styles = StyleSheet.create({
   },
   roleText: {
     fontWeight: '600',
+  },
+  workspaceNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  workspaceNoticeText: {
+    flex: 1,
   },
   logoutButton: {
     flexDirection: 'row',
