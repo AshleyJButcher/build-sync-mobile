@@ -6,6 +6,8 @@ interface ProjectState {
   selectedProjectId: string | null;
   setSelectedProject: (projectId: string | null) => void;
   clearSelectedProject: () => void;
+  projectMenuOpen: boolean;
+  setProjectMenuOpen: (open: boolean) => void;
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -18,10 +20,17 @@ export const useProjectStore = create<ProjectState>()(
       clearSelectedProject: () => {
         set({ selectedProjectId: null });
       },
+      projectMenuOpen: false,
+      setProjectMenuOpen: (open: boolean) => {
+        set({ projectMenuOpen: open });
+      },
     }),
     {
       name: 'project-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        selectedProjectId: state.selectedProjectId,
+      }),
     }
   )
 );

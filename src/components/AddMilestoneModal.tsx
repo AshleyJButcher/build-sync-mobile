@@ -11,13 +11,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
-import { useCreateMilestone, useMilestones } from '../hooks/useProjectData';
+import { useCreateMilestone, useMilestones, type Milestone } from '../hooks/useProjectData';
 import { useProjectStore } from '../store/useProjectStore';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 const STATUS_OPTIONS = [
   { value: 'upcoming', label: 'Upcoming' },
@@ -41,11 +39,17 @@ export function AddMilestoneModal({
   const { selectedProjectId } = useProjectStore();
   const { data: milestones } = useMilestones(selectedProjectId);
   const createMilestone = useCreateMilestone();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    due_date: string;
+    status: Milestone['status'];
+    completion_percentage: string;
+  }>({
     title: '',
     description: '',
     due_date: '',
-    status: 'upcoming' as const,
+    status: 'upcoming',
     completion_percentage: '0',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -125,6 +129,7 @@ export function AddMilestoneModal({
       transparent
       animationType="slide"
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
       <KeyboardAvoidingView
         style={styles.modalOverlay}
@@ -415,6 +420,7 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    height: '90%',
     maxHeight: '90%',
     paddingBottom: 32,
   },

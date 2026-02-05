@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,15 +6,14 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useProjects, type Project } from '../hooks/useProjects';
 import { useProjectStore } from '../store/useProjectStore';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 interface ProjectSelectorProps {
   onSelectProject?: (project: Project) => void;
@@ -23,10 +22,19 @@ interface ProjectSelectorProps {
 export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
   const theme = useTheme<Theme>();
   const { data: projects, isLoading } = useProjects();
-  const { selectedProjectId, setSelectedProject } = useProjectStore();
+  const { selectedProjectId, setSelectedProject, clearSelectedProject } = useProjectStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const projectsResolved = projects !== undefined;
+  const showLoading = !projectsResolved || isLoading;
+
   const selectedProject = projects?.find((p) => p.id === selectedProjectId);
+
+  useEffect(() => {
+    if (selectedProjectId && projects && projects.length > 0 && !projects.some((p) => p.id === selectedProjectId)) {
+      clearSelectedProject();
+    }
+  }, [selectedProjectId, projects, clearSelectedProject]);
 
   const handleSelectProject = (project: Project) => {
     setSelectedProject(project.id);
@@ -72,12 +80,13 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
 
   return (
     <>
-      <TouchableOpacity
-        style={[
+      <Pressable
+        style={({ pressed }) => [
           styles.selector,
           {
             backgroundColor: theme.colors.background,
             borderColor: theme.colors.border,
+            opacity: pressed ? 0.8 : 1,
           },
         ]}
         onPress={() => setIsModalVisible(true)}
@@ -106,7 +115,7 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
           size={20}
           color={theme.colors.textSecondary}
         />
-      </TouchableOpacity>
+      </Pressable>
 
       <Modal
         visible={isModalVisible}
@@ -115,6 +124,10 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
         onRequestClose={() => setIsModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setIsModalVisible(false)}
+          />
           <View
             style={[
               styles.modalContent,
@@ -133,7 +146,7 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
               </TouchableOpacity>
             </View>
 
-            {isLoading ? (
+            {showLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
               </View>
@@ -143,6 +156,7 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
                 renderItem={renderProjectItem}
                 keyExtractor={(item) => item.id}
                 style={styles.projectList}
+                keyboardShouldPersistTaps="always"
               />
             ) : (
               <View style={styles.emptyContainer}>
@@ -175,6 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     minHeight: 48,
+    alignSelf: 'stretch',
   },
   selectorContent: {
     flexDirection: 'row',
@@ -201,6 +216,7 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    minHeight: '50%',
     maxHeight: '80%',
     paddingBottom: 32,
   },
@@ -221,6 +237,7 @@ const styles = StyleSheet.create({
   },
   projectList: {
     flex: 1,
+    minHeight: 120,
   },
   projectItem: {
     flexDirection: 'row',

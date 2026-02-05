@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,8 +19,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../src/lib/currency';
 import { EditProductModal } from '../../src/components/EditProductModal';
 import { useProjectStore } from '../../src/store/useProjectStore';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ProductDetailScreen() {
   const theme = useTheme<Theme>();

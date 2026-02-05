@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useProjects, type Project } from '../../src/hooks/useProjects';
@@ -17,9 +17,8 @@ import { useProjectStore } from '../../src/store/useProjectStore';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { CreateProjectModal } from '../../src/components/CreateProjectModal';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ProjectsScreen() {
   const theme = useTheme<Theme>();
@@ -157,14 +156,16 @@ export default function ProjectsScreen() {
         <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
           Projects
         </Text>
-        {canCreateProject && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowCreateDialog(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canCreateProject && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowCreateDialog(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {projects && projects.length === 0 ? (
@@ -188,6 +189,10 @@ export default function ProjectsScreen() {
           renderItem={renderProjectItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          removeClippedSubviews={true}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

@@ -67,6 +67,42 @@ export interface PaintColor {
   created_at: string;
 }
 
+export interface ScheduleItem {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  start_date: string;
+  end_date: string | null;
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  location: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface RemedialItem {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high';
+  reported_by: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export interface Drawing {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  file_url: string;
+  file_name: string;
+  uploaded_by: string;
+  created_at: string;
+}
+
 // Helper to create activity
 async function createActivity(
   userId: string,
@@ -686,6 +722,418 @@ export function useDeleteCostChange() {
       queryClient.invalidateQueries({
         queryKey: ['costChanges', data.projectId],
       });
+    },
+  });
+}
+
+// Schedule Items
+export function useScheduleItems(projectId: string | null) {
+  return useQuery({
+    queryKey: ['scheduleItems', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+
+      const { data, error } = await supabase
+        .from('scheduled_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('start_date', { ascending: true });
+
+      if (error) throw error;
+      return data as ScheduleItem[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateScheduleItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      data: Omit<ScheduleItem, 'id' | 'created_at' | 'created_by'>
+    ) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: item, error } = await supabase
+        .from('scheduled_tasks')
+        .insert({ ...data, created_by: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await createActivity(
+        user.id,
+        data.project_id,
+        'created',
+        'scheduled_task',
+        item.id,
+        item.title
+      );
+
+      return item;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['scheduleItems', data.project_id],
+      });
+    },
+  });
+}
+
+export function useUpdateScheduleItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: Partial<ScheduleItem> & { id: string }) => {
+      const { data: item, error } = await supabase
+        .from('scheduled_tasks')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          item.project_id,
+          'updated',
+          'scheduled_task',
+          item.id,
+          item.title
+        );
+      }
+
+      return item;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['scheduleItems', data.project_id],
+      });
+    },
+  });
+}
+
+export function useDeleteScheduleItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      projectId,
+      name,
+    }: {
+      id: string;
+      projectId: string;
+      name: string;
+    }) => {
+      const { error } = await supabase
+        .from('scheduled_tasks')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          projectId,
+          'deleted',
+          'scheduled_task',
+          id,
+          name
+        );
+      }
+
+      return { projectId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['scheduleItems', data.projectId],
+      });
+    },
+  });
+}
+
+// Remedial Items
+export function useRemedialItems(projectId: string | null) {
+  return useQuery({
+    queryKey: ['remedialItems', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+
+      const { data, error } = await supabase
+        .from('remedial_items')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as RemedialItem[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateRemedialItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      data: Omit<RemedialItem, 'id' | 'created_at' | 'reported_by' | 'resolved_at'>
+    ) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: item, error } = await supabase
+        .from('remedial_items')
+        .insert({ ...data, reported_by: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await createActivity(
+        user.id,
+        data.project_id,
+        'created',
+        'remedial_item',
+        item.id,
+        item.title
+      );
+
+      return item;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['remedialItems', data.project_id],
+      });
+    },
+  });
+}
+
+export function useUpdateRemedialItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: Partial<RemedialItem> & { id: string }) => {
+      const payload = { ...data };
+      if (
+        (payload.status === 'resolved' || payload.status === 'closed') &&
+        payload.resolved_at == null
+      ) {
+        payload.resolved_at = new Date().toISOString();
+      }
+      const { data: item, error } = await supabase
+        .from('remedial_items')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          item.project_id,
+          'updated',
+          'remedial_item',
+          item.id,
+          item.title
+        );
+      }
+
+      return item;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['remedialItems', data.project_id],
+      });
+    },
+  });
+}
+
+export function useDeleteRemedialItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      projectId,
+      name,
+    }: {
+      id: string;
+      projectId: string;
+      name: string;
+    }) => {
+      const { error } = await supabase
+        .from('remedial_items')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          projectId,
+          'deleted',
+          'remedial_item',
+          id,
+          name
+        );
+      }
+
+      return { projectId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['remedialItems', data.projectId],
+      });
+    },
+  });
+}
+
+// Drawings
+export function useDrawings(projectId: string | null) {
+  return useQuery({
+    queryKey: ['drawings', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+
+      const { data, error } = await supabase
+        .from('drawings')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Drawing[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      data: Omit<Drawing, 'id' | 'created_at' | 'uploaded_by'>
+    ) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: drawing, error } = await supabase
+        .from('drawings')
+        .insert({ ...data, uploaded_by: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await createActivity(
+        user.id,
+        data.project_id,
+        'created',
+        'drawing',
+        drawing.id,
+        drawing.title
+      );
+
+      return drawing;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.project_id] });
+    },
+  });
+}
+
+export function useUpdateDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: Partial<Drawing> & { id: string }) => {
+      const { data: drawing, error } = await supabase
+        .from('drawings')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          drawing.project_id,
+          'updated',
+          'drawing',
+          drawing.id,
+          drawing.title
+        );
+      }
+
+      return drawing;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.project_id] });
+    },
+  });
+}
+
+export function useDeleteDrawing() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      projectId,
+      name,
+    }: {
+      id: string;
+      projectId: string;
+      name: string;
+    }) => {
+      const { error } = await supabase.from('drawings').delete().eq('id', id);
+
+      if (error) throw error;
+
+      if (user) {
+        await createActivity(
+          user.id,
+          projectId,
+          'deleted',
+          'drawing',
+          id,
+          name
+        );
+      }
+
+      return { projectId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['drawings', data.projectId] });
     },
   });
 }

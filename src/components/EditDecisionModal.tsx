@@ -11,12 +11,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useUpdateDecision, type Decision } from '../hooks/useProjectData';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 const CATEGORIES = [
   'Design',

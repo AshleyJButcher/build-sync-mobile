@@ -1,7 +1,10 @@
 import { createTheme } from '@shopify/restyle';
 
+// Export the primary green color constant for use outside of theme context
+export const GREEN_PRIMARY = '#4CAF50';
+
 const palette = {
-  primary: '#4CAF50', // Green primary color
+  primary: GREEN_PRIMARY, // Green primary color
   secondary: '#2196F3',
   background: '#FFFFFF',
   backgroundSecondary: '#F5F5F5',
@@ -10,7 +13,7 @@ const palette = {
   textSecondary: '#636E72',
   textOnPrimary: '#FFFFFF',
   border: '#DFE6E9',
-  success: '#4CAF50',
+  success: GREEN_PRIMARY,
   error: '#FF7675',
   warning: '#FDCB6E',
 };
@@ -29,6 +32,9 @@ const darkPalette = {
   error: '#FF7675',
   warning: '#FDCB6E',
 };
+
+// Export dark theme primary for consistency (though we primarily use light theme's GREEN_PRIMARY)
+export const GREEN_PRIMARY_DARK = '#66BB6A';
 
 export const lightTheme = createTheme({
   colors: {

@@ -11,14 +11,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useCreateProject, type CreateProjectData } from '../hooks/useProjects';
 import { useAuth } from '../hooks/useAuth';
 import { useProjectStore } from '../store/useProjectStore';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 interface CreateProjectModalProps {
   visible: boolean;
@@ -277,7 +275,7 @@ export function CreateProjectModal({
                     const numericValue = text.replace(/[^0-9.]/g, '');
                     setFormData({
                       ...formData,
-                      budget: numericValue ? numericValue : undefined,
+                      budget: numericValue ? parseFloat(numericValue) : undefined,
                     });
                     if (errors.budget) {
                       setErrors({ ...errors, budget: '' });

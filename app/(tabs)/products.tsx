@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useProducts, type Product } from '../../src/hooks/useProjectData';
@@ -18,9 +18,9 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../src/lib/currency';
 import { AddProductModal } from '../../src/components/AddProductModal';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function ProductsScreen() {
   const theme = useTheme<Theme>();
@@ -205,17 +205,22 @@ export default function ProductsScreen() {
       ]}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Products
-        </Text>
-        {canEditProducts && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+            Products
+          </Text>
+        </View>
+        <HeaderRightActions>
+          {canEditProducts && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {/* Category Filter */}
@@ -286,6 +291,10 @@ export default function ProductsScreen() {
           renderItem={renderProductItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          removeClippedSubviews={true}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -313,6 +322,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 28,

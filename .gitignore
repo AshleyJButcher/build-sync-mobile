@@ -56,6 +56,9 @@ web-build/
 .env.local
 .env.*.local
 
+# Cursor MCP (contains Supabase token for this app only)
+.cursor/mcp.json
+
 # TypeScript
 *.tsbuildinfo
 

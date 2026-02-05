@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useDecisions, type Decision } from '../../src/hooks/useProjectData';
@@ -17,9 +17,9 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { AddDecisionModal } from '../../src/components/AddDecisionModal';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useRouter } from 'expo-router';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function DecisionsScreen() {
   const theme = useTheme<Theme>();
@@ -219,10 +219,12 @@ export default function DecisionsScreen() {
       ]}
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View>
-          <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
-            Decisions
-          </Text>
+        <View style={styles.headerLeft}>
+          <ProjectMenuButton />
+          <View>
+            <Text variant="headingLarge" style={[styles.headerTitle, { color: theme.colors.text }]}>
+              Decisions
+            </Text>
           {pendingCount > 0 && (
             <Text
               variant="caption"
@@ -231,15 +233,18 @@ export default function DecisionsScreen() {
               {pendingCount} pending
             </Text>
           )}
+          </View>
         </View>
-        {canEditDecisions && (
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
-            onPress={() => setShowAddModal(true)}
-          >
-            <Ionicons name="add" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <HeaderRightActions>
+          {canEditDecisions && (
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: GREEN_PRIMARY }]}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </HeaderRightActions>
       </View>
 
       {/* Filter Tabs */}
@@ -302,6 +307,10 @@ export default function DecisionsScreen() {
           renderItem={renderDecisionItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          removeClippedSubviews={true}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -329,6 +338,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   headerTitle: {
     fontSize: 28,

@@ -11,12 +11,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useUpdateMilestone, type Milestone } from '../hooks/useProjectData';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 const STATUS_OPTIONS = [
   { value: 'upcoming', label: 'Upcoming' },
@@ -40,11 +38,17 @@ export function EditMilestoneModal({
 }: EditMilestoneModalProps) {
   const theme = useTheme<Theme>();
   const updateMilestone = useUpdateMilestone();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    due_date: string;
+    status: Milestone['status'];
+    completion_percentage: string;
+  }>({
     title: '',
     description: '',
     due_date: '',
-    status: 'upcoming' as const,
+    status: 'upcoming',
     completion_percentage: '0',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,10 +58,10 @@ export function EditMilestoneModal({
     if (milestone) {
       setFormData({
         title: milestone.title,
-        description: milestone.description || '',
-        due_date: milestone.due_date || '',
-        status: milestone.status as typeof formData.status,
-        completion_percentage: milestone.completion_percentage?.toString() || '0',
+        description: milestone.description ?? '',
+        due_date: milestone.due_date ?? '',
+        status: milestone.status,
+        completion_percentage: milestone.completion_percentage?.toString() ?? '0',
       });
     }
   }, [milestone]);
@@ -92,7 +96,7 @@ export function EditMilestoneModal({
         id: milestone.id,
         title: formData.title.trim(),
         description: formData.description?.trim() || null,
-        due_date: formData.due_date || null,
+        due_date: formData.due_date || undefined,
         status: formData.status,
         completion_percentage: parseInt(formData.completion_percentage, 10),
       });

@@ -13,14 +13,12 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../theme';
+import { type Theme, GREEN_PRIMARY } from '../theme';
 import { Text } from './Text';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useUpdateProduct, type Product } from '../hooks/useProjectData';
 import { supabase } from '../lib/supabase';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 const CATEGORIES = [
   'Kitchen',

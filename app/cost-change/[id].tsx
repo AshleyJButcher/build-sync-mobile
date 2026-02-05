@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { type Theme } from '../../src/theme';
+import { type Theme, GREEN_PRIMARY } from '../../src/theme';
 import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,8 +19,6 @@ import { formatCurrency } from '../../src/lib/currency';
 import { format } from 'date-fns';
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { EditCostChangeModal } from '../../src/components/EditCostChangeModal';
-
-const GREEN_PRIMARY = '#4CAF50';
 
 export default function CostChangeDetailScreen() {
   const theme = useTheme<Theme>();

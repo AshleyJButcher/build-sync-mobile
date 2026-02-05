@@ -6,6 +6,8 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ProjectSelector } from '../../src/components/ProjectSelector';
+import { ProjectMenuButton } from '../../src/components/ProjectMenuButton';
+import { HeaderRightActions } from '../../src/components/HeaderRightActions';
 import { useProject } from '../../src/hooks/useProjects';
 import { useProjectStore } from '../../src/store/useProjectStore';
 import { StatsCard } from '../../src/components/StatsCard';
@@ -22,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function HomeScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
-  const { user, role, logout } = useAuth();
+  const { user, role } = useAuth();
   const router = useRouter();
   const { selectedProjectId } = useProjectStore();
   const [refreshing, setRefreshing] = useState(false);
@@ -31,11 +33,6 @@ export default function HomeScreen() {
   const { data: milestones, refetch: refetchMilestones } = useMilestones(selectedProjectId);
   const { data: decisions, refetch: refetchDecisions } = useDecisions(selectedProjectId);
   const { data: costChanges, refetch: refetchCostChanges } = useCostChanges(selectedProjectId);
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -76,33 +73,33 @@ export default function HomeScreen() {
   }, [decisions, costChanges, milestones, products]);
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingTop: insets.top + 16 },
-      ]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <Text variant="headingLarge" style={[styles.title, { color: theme.colors.text }]}>
-          Dashboard
-        </Text>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: insets.top + 16 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <ProjectMenuButton />
+            <Text variant="headingLarge" style={[styles.title, { color: theme.colors.text }]}>
+              Dashboard
+            </Text>
+          </View>
+          <HeaderRightActions />
+        </View>
 
-      <View style={styles.section}>
-        <ProjectSelector />
-      </View>
+        <View style={styles.section}>
+          <ProjectSelector />
+        </View>
 
-      {selectedProjectId && (
+        {selectedProjectId && (
         <>
           {isLoadingProject ? (
             <View style={styles.loadingContainer}>
@@ -110,7 +107,7 @@ export default function HomeScreen() {
             </View>
           ) : project ? (
             <>
-              <View style={styles.section}>
+              <View style={[styles.section, styles.dashboardSection]}>
                 <Text variant="headingMedium" style={[styles.sectionTitle, { color: theme.colors.text }]}>
                   {project.name}
                 </Text>
@@ -134,6 +131,7 @@ export default function HomeScreen() {
                     value={stats.pendingDecisions}
                     icon="checkmark-circle-outline"
                     variant={stats.pendingDecisions > 0 ? 'primary' : 'default'}
+                    onPress={() => router.push('/(tabs)/decisions')}
                   />
                 </View>
                 <View style={styles.statCardWrapper}>
@@ -142,6 +140,7 @@ export default function HomeScreen() {
                     value={stats.pendingCostChanges}
                     icon="trending-up-outline"
                     variant={stats.pendingCostChanges > 0 ? 'primary' : 'default'}
+                    onPress={() => router.push('/(tabs)/cost-changes')}
                   />
                 </View>
                 <View style={styles.statCardWrapper}>
@@ -152,6 +151,7 @@ export default function HomeScreen() {
                       ? `${Math.round((stats.completedMilestones / stats.totalMilestones) * 100)}% complete`
                       : 'No milestones'}
                     icon="flag-outline"
+                    onPress={() => router.push('/(tabs)/milestones')}
                   />
                 </View>
                 <View style={styles.statCardWrapper}>
@@ -159,6 +159,7 @@ export default function HomeScreen() {
                     title="Products"
                     value={stats.totalProducts}
                     icon="cube-outline"
+                    onPress={() => router.push('/(tabs)/products')}
                   />
                 </View>
                 {stats.totalCostChange !== 0 && (
@@ -166,8 +167,9 @@ export default function HomeScreen() {
                     <StatsCard
                       title="Cost Changes"
                       value={stats.totalCostChange > 0 ? `+${formatCurrency(stats.totalCostChange)}` : formatCurrency(stats.totalCostChange)}
-                      icon="pound-outline"
+                      icon="cash-outline"
                       variant={stats.totalCostChange > 0 ? 'primary' : 'default'}
+                      onPress={() => router.push('/(tabs)/cost-changes')}
                     />
                   </View>
                 )}
@@ -184,12 +186,16 @@ export default function HomeScreen() {
           </Text>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   contentContainer: {
@@ -201,23 +207,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
   },
-  logoutButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
-  },
   section: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   sectionTitle: {
     marginBottom: 8,
@@ -248,5 +247,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
+  },
+  dashboardSection: {
+    marginTop: 8,
   },
 });
