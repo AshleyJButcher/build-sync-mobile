@@ -80,6 +80,7 @@ export default function HomeScreen() {
           styles.contentContainer,
           { paddingTop: insets.top + 16 },
         ]}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }

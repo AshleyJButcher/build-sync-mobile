@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { useWorkspaceStore } from '../store/useWorkspaceStore';
 
 export interface Project {
   id: string;
@@ -15,6 +16,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   archived_at: string | null;
+  workspace_id?: string | null;
 }
 
 export interface CreateProjectData {
@@ -28,18 +30,24 @@ export interface CreateProjectData {
 
 export function useProjects() {
   const { user } = useAuth();
+  const { selectedWorkspaceId } = useWorkspaceStore();
 
   return useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', selectedWorkspaceId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('projects')
         .select('*')
         .is('archived_at', null)
         .order('created_at', { ascending: false });
 
+      if (selectedWorkspaceId) {
+        q = q.eq('workspace_id', selectedWorkspaceId);
+      }
+
+      const { data, error } = await q;
       if (error) throw error;
-      return data as Project[];
+      return (data as Project[]) ?? [];
     },
     enabled: !!user,
   });
@@ -47,18 +55,24 @@ export function useProjects() {
 
 export function useArchivedProjects() {
   const { user } = useAuth();
+  const { selectedWorkspaceId } = useWorkspaceStore();
 
   return useQuery({
-    queryKey: ['projects', 'archived'],
+    queryKey: ['projects', 'archived', selectedWorkspaceId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('projects')
         .select('*')
         .not('archived_at', 'is', null)
         .order('archived_at', { ascending: false });
 
+      if (selectedWorkspaceId) {
+        q = q.eq('workspace_id', selectedWorkspaceId);
+      }
+
+      const { data, error } = await q;
       if (error) throw error;
-      return data as Project[];
+      return (data as Project[]) ?? [];
     },
     enabled: !!user,
   });
@@ -86,10 +100,14 @@ export function useProject(projectId: string | null) {
 export function useCreateProject() {
   const queryClient = useQueryClient();
   const { role } = useAuth();
+  const { selectedWorkspaceId } = useWorkspaceStore();
 
   return useMutation({
     mutationFn: async (data: CreateProjectData) => {
-      // Force refresh the auth session to ensure the Authorization header is synced
+      if (!selectedWorkspaceId) {
+        throw new Error('Select a workspace first.');
+      }
+
       await supabase.auth.refreshSession().catch(() => undefined);
 
       const { data: sessionData, error: sessionError } =
@@ -109,6 +127,7 @@ export function useCreateProject() {
             start_date: data.start_date ?? null,
             end_date: data.end_date ?? null,
             memberRole: role || 'client',
+            workspace_id: selectedWorkspaceId,
           },
         }
       );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,6 +13,9 @@ import { Text } from '../../src/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useProfile } from '../../src/hooks/useProfile';
+import { useWorkspaces } from '../../src/hooks/useWorkspaces';
+import { useWorkspaceStore } from '../../src/store/useWorkspaceStore';
+import { ChangeWorkspaceModal } from '../../src/components/ChangeWorkspaceModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
@@ -32,6 +35,12 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, role, logout } = useAuth();
   const { data: profile } = useProfile();
+  const { data: workspaces = [] } = useWorkspaces();
+  const { selectedWorkspaceId } = useWorkspaceStore();
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+
+  const currentWorkspace = workspaces.find((w) => w.id === selectedWorkspaceId);
+  const hasWorkspaces = workspaces.length > 0;
 
   const displayName = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'User';
   const initials = (() => {
@@ -117,18 +126,45 @@ export default function ProfileScreen() {
 
         <View
           style={[
-            styles.workspaceNotice,
+            styles.workspaceSection,
             {
               backgroundColor: theme.colors.backgroundSecondary,
               borderColor: theme.colors.border,
             },
           ]}
         >
-          <Ionicons name="globe-outline" size={22} color={theme.colors.textSecondary} />
-          <Text variant="bodySmall" style={[styles.workspaceNoticeText, { color: theme.colors.textSecondary }]}>
-            Workspace details must be configured on the web.
-          </Text>
+          <View style={styles.workspaceHeader}>
+            <Ionicons name="business-outline" size={22} color={theme.colors.textSecondary} />
+            <Text variant="body" style={[styles.workspaceLabel, { color: theme.colors.textSecondary }]}>
+              Workspace
+            </Text>
+          </View>
+          {hasWorkspaces ? (
+            <>
+              <Text variant="body" style={[styles.workspaceName, { color: theme.colors.text }]}>
+                {currentWorkspace?.name ?? 'None selected'}
+              </Text>
+              <TouchableOpacity
+                style={[styles.changeWorkspaceButton, { borderColor: theme.colors.border }]}
+                onPress={() => setShowWorkspaceModal(true)}
+              >
+                <Text variant="bodySmall" style={[styles.changeWorkspaceText, { color: GREEN_PRIMARY }]}>
+                  Change workspace
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={GREEN_PRIMARY} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <Text variant="bodySmall" style={[styles.workspaceNoticeText, { color: theme.colors.textSecondary }]}>
+              Workspace details must be configured on the web.
+            </Text>
+          )}
         </View>
+
+        <ChangeWorkspaceModal
+          visible={showWorkspaceModal}
+          onClose={() => setShowWorkspaceModal(false)}
+        />
 
         <TouchableOpacity
           style={[styles.logoutButton, { borderColor: theme.colors.border }]}
@@ -211,14 +247,36 @@ const styles = StyleSheet.create({
   roleText: {
     fontWeight: '600',
   },
-  workspaceNotice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  workspaceSection: {
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 24,
+  },
+  workspaceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  workspaceLabel: {
+    fontWeight: '600',
+  },
+  workspaceName: {
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  changeWorkspaceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  changeWorkspaceText: {
+    fontWeight: '600',
   },
   workspaceNoticeText: {
     flex: 1,

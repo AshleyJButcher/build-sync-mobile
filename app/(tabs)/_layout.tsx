@@ -1,9 +1,14 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { ProjectSideMenu } from '../../src/components/ProjectSideMenu';
 import { OfflineBanner } from '../../src/components/OfflineBanner';
+import { useWorkspaces } from '../../src/hooks/useWorkspaces';
+import { useWorkspaceStore } from '../../src/store/useWorkspaceStore';
+import { useProjectStore } from '../../src/store/useProjectStore';
+import { useProject } from '../../src/hooks/useProjects';
 
 function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
   return (
@@ -15,10 +20,33 @@ function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
   );
 }
 
+function DefaultWorkspaceSetter() {
+  const { data: workspaces = [] } = useWorkspaces();
+  const { selectedWorkspaceId, setSelectedWorkspace } = useWorkspaceStore();
+  const { selectedProjectId } = useProjectStore();
+  const { data: selectedProject, isFetched: selectedProjectFetched } = useProject(selectedProjectId);
+
+  useEffect(() => {
+    if (workspaces.length === 0 || selectedWorkspaceId != null) return;
+    if (selectedProjectId && !selectedProjectFetched) return;
+
+    const workspaceIdToSet =
+      selectedProject?.workspace_id && workspaces.some((w) => w.id === selectedProject.workspace_id)
+        ? selectedProject.workspace_id
+        : workspaces[0].id;
+
+    setSelectedWorkspace(workspaceIdToSet);
+  }, [workspaces, selectedWorkspaceId, selectedProjectId, selectedProject?.workspace_id, selectedProjectFetched, setSelectedWorkspace]);
+
+  return null;
+}
+
 export default function TabsLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
+    <>
+      <DefaultWorkspaceSetter />
+      <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#4CAF50',
@@ -116,5 +144,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }

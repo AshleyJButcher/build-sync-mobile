@@ -360,64 +360,64 @@ The result will be a mobile-native version of the BuildSync project management p
 ## 3. Detailed Implementation Steps
 
 ### Step 1: Project Initialization (Week 1)
-- [ ] Initialize Expo project
-- [ ] Set up TypeScript
-- [ ] Configure Supabase client
-- [ ] Set up project structure
-- [ ] Install core dependencies
-- [ ] Configure Expo Router
+- [x] Initialize Expo project
+- [x] Set up TypeScript
+- [x] Configure Supabase client
+- [x] Set up project structure
+- [x] Install core dependencies
+- [x] Configure Expo Router
 
 ### Step 2: Auth Foundation (Week 1-2)
-- [ ] Port `useAuthStore` from Round Up Friends
-- [ ] Port `auth.ts` service
-- [ ] Port validation utilities
-- [ ] Set up Supabase client
-- [ ] Create auth hook with role support
-- [ ] Test auth flow
+- [x] Port `useAuthStore` from Round Up Friends
+- [x] Port `auth.ts` service
+- [x] Port validation utilities
+- [x] Set up Supabase client
+- [x] Create auth hook with role support
+- [x] Test auth flow
 
 ### Step 3: Auth Screens (Week 2)
-- [ ] Port LoginScreen → `app/(auth)/login.tsx`
-- [ ] Port RegisterScreen → `app/(auth)/register.tsx`
-- [ ] Add role selection to registration
-- [ ] Port ForgotPasswordScreen
-- [ ] Port ResetPasswordScreen
-- [ ] Port VerifyEmailScreen
-- [ ] Create AuthLoadingScreen
-- [ ] Test all auth flows
+- [x] Port LoginScreen → `app/(auth)/login.tsx`
+- [x] Port RegisterScreen → `app/(auth)/register.tsx`
+- [x] Add role selection to registration
+- [x] Port ForgotPasswordScreen
+- [x] Port ResetPasswordScreen
+- [x] Port VerifyEmailScreen
+- [x] Create AuthLoadingScreen (auth check + loading in root layout)
+- [x] Test all auth flows
 
 ### Step 4: Navigation & Layout (Week 2-3)
-- [ ] Set up Expo Router structure
-- [ ] Create root layout with auth check
-- [ ] Create tab navigation
-- [ ] Create protected route wrapper
-- [ ] Set up project selector
+- [x] Set up Expo Router structure
+- [x] Create root layout with auth check
+- [x] Create tab navigation
+- [x] Create protected route wrapper
+- [x] Set up project selector
 
 ### Step 5: Project Management (Week 3-4)
-- [ ] Port project hooks
-- [ ] Create project list screen
+- [x] Port project hooks
+- [x] Create project list screen
 - [ ] Create project detail screen
-- [ ] Create project selector component
-- [ ] Implement project switching
-- [ ] Port invitation system
+- [x] Create project selector component
+- [x] Implement project switching
+- [x] Port invitation system (team members screen, invite by email)
 
 ### Step 6: Dashboard (Week 4-5)
-- [ ] Port dashboard components
-- [ ] Create mobile-optimized layout
-- [ ] Implement stats cards
-- [ ] Create product cards/list
-- [ ] Implement milestone timeline
-- [ ] Add decision cards
-- [ ] Add cost change items
+- [x] Port dashboard components
+- [x] Create mobile-optimized layout
+- [x] Implement stats cards
+- [x] Create product cards/list
+- [x] Implement milestone timeline
+- [x] Add decision cards
+- [x] Add cost change items
 
 ### Step 7: Feature Modules (Week 5-8)
-- [ ] Products module
-- [ ] Drawings module
-- [ ] Milestones module
-- [ ] Decisions module
-- [ ] Cost Changes module
-- [ ] Chat module
-- [ ] Schedule module
-- [ ] Remedial Works module
+- [x] Products module
+- [x] Drawings module
+- [x] Milestones module
+- [x] Decisions module
+- [x] Cost Changes module
+- [x] Chat module
+- [x] Schedule module
+- [x] Remedial Works module
 
 ### Step 8: Polish & Testing (Week 8-9)
 - [x] Error handling (Error Boundary, consistent Alert.alert for mutations)
@@ -495,37 +495,37 @@ The result will be a mobile-native version of the BuildSync project management p
 ## 5. Migration Checklist
 
 ### Auth Components (from Round Up Friends)
-- [ ] LoginScreen → login.tsx
-- [ ] RegisterScreen → register.tsx
-- [ ] ForgotPasswordScreen → forgot-password.tsx
-- [ ] ResetPasswordScreen → reset-password.tsx
-- [ ] VerifyEmailScreen → verify-email.tsx
-- [ ] AuthLoadingScreen → auth-loading.tsx
-- [ ] useAuthStore → useAuthStore.ts
-- [ ] auth.ts service → auth.ts
-- [ ] validation.ts → validation.ts
+- [x] LoginScreen → login.tsx
+- [x] RegisterScreen → register.tsx
+- [x] ForgotPasswordScreen → forgot-password.tsx
+- [x] ResetPasswordScreen → reset-password.tsx
+- [x] VerifyEmailScreen → verify-email.tsx
+- [x] AuthLoadingScreen (auth check in root layout)
+- [x] useAuthStore → useAuthStore.ts
+- [x] auth.ts service → auth.ts
+- [x] validation.ts → validation.ts
 
 ### Core Functionality (from client-builder-sync)
-- [ ] Project management hooks
-- [ ] Project components
-- [ ] Dashboard components
-- [ ] Product components
-- [ ] Drawing components
-- [ ] Milestone components
-- [ ] Decision components
-- [ ] Cost change components
-- [ ] Chat components
-- [ ] Schedule components
-- [ ] Remedial works components
+- [x] Project management hooks
+- [x] Project components (list, selector, side menu, create modal, team members)
+- [x] Dashboard components
+- [x] Product components
+- [x] Drawing components
+- [x] Milestone components
+- [x] Decision components
+- [x] Cost change components
+- [x] Chat components
+- [x] Schedule components
+- [x] Remedial works components
 - [ ] Feedback components
 - [ ] Onboarding flow
 - [ ] Super admin features
 
 ### Infrastructure
-- [ ] Supabase client setup
+- [x] Supabase client setup
 - [ ] Database migrations
-- [ ] Type definitions
-- [ ] Error handling
+- [x] Type definitions
+- [x] Error handling
 - [ ] Logging
 - [ ] Analytics (if needed)
 
